@@ -128,7 +128,7 @@ const BuildingDetail = () => {
               </div>
               <Progress 
                 value={percentSpent > 100 ? 100 : percentSpent} 
-                className={`h-2 ${isOverBudget ? 'bg-destructive/20' : 'bg-secondary/20'}`}
+                className={isOverBudget ? 'bg-destructive/20' : 'bg-secondary/20'}
                 indicatorClassName={isOverBudget ? 'bg-destructive' : 'bg-secondary'}
               />
             </div>
