@@ -4,6 +4,7 @@ import { Building, Region, BudgetSummary } from "@/types/budget";
 const SHAREPOINT_SITE_URL = "https://your-tenant.sharepoint.com/sites/your-site";
 const BUILDINGS_LIST_NAME = "Buildings";
 const REGIONS_LIST_NAME = "Regions";
+const CAF_APPLICATIONS_LIST_NAME = "CAFApplications"; // New list for CAF applications
 
 // Helper function to handle authentication and fetch data from SharePoint
 async function fetchFromSharePoint(endpoint: string) {
@@ -203,5 +204,34 @@ export async function updateBuildingBudget(
   } catch (error) {
     console.error("Error updating building budget:", error);
     throw error;
+  }
+}
+
+// Get CAF application metrics
+export async function getCafApplicationMetrics() {
+  try {
+    const applications = await fetchFromSharePoint(CAF_APPLICATIONS_LIST_NAME);
+    
+    // Total number of CAF applications
+    const totalApplications = applications.length;
+    
+    // Count approved applications
+    const approvedApplications = applications.filter(
+      (app: any) => app.ApprovalStatus === "Approved"
+    ).length;
+    
+    return {
+      totalApplications,
+      approvedApplications,
+      pendingApplications: totalApplications - approvedApplications,
+    };
+  } catch (error) {
+    console.error("Error getting CAF application metrics:", error);
+    // Return default values if there's an error
+    return {
+      totalApplications: 0,
+      approvedApplications: 0,
+      pendingApplications: 0,
+    };
   }
 }
