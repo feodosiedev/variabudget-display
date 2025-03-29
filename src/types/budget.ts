@@ -24,3 +24,11 @@ export interface BudgetSummary {
   variancePercentage: number;
   regions: Region[];
 }
+
+export interface BudgetCategory {
+  id: string;
+  name: string;
+  budgeted: number;
+  actual: number;
+  icon?: string;
+}
