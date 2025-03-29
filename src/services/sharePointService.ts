@@ -1,4 +1,3 @@
-
 import { Building, Region, BudgetSummary } from "@/types/budget";
 
 // Base SharePoint site URL - this should be updated to your specific SharePoint site
@@ -29,6 +28,56 @@ async function fetchFromSharePoint(endpoint: string) {
     return data.value;
   } catch (error) {
     console.error("Error fetching from SharePoint:", error);
+    throw error;
+  }
+}
+
+// Helper function to update SharePoint list item
+async function updateSharePointItem(listName: string, itemId: string, updates: Record<string, any>) {
+  try {
+    // SharePoint REST API requires authentication
+    // This implementation uses browser's authentication context
+    // The user must be logged into Microsoft 365
+    
+    // Get request digest for form digest value (required for POST operations)
+    const digestResponse = await fetch(`${SHAREPOINT_SITE_URL}/_api/contextinfo`, {
+      method: "POST",
+      headers: {
+        "Accept": "application/json;odata=nometadata",
+        "Content-Type": "application/json"
+      },
+      credentials: "include"
+    });
+    
+    if (!digestResponse.ok) {
+      throw new Error(`SharePoint API error getting form digest: ${digestResponse.status}`);
+    }
+    
+    const digestData = await digestResponse.json();
+    const formDigestValue = digestData.FormDigestValue;
+    
+    // Make the update request
+    const response = await fetch(`${SHAREPOINT_SITE_URL}/_api/web/lists/getbytitle('${listName}')/items(${itemId})`, {
+      method: "POST",
+      headers: {
+        "Accept": "application/json;odata=nometadata",
+        "Content-Type": "application/json",
+        "X-HTTP-Method": "MERGE",
+        "IF-MATCH": "*",
+        "X-RequestDigest": formDigestValue
+      },
+      body: JSON.stringify(updates),
+      credentials: "include"
+    });
+    
+    // SharePoint returns 204 No Content on successful update
+    if (response.status === 204) {
+      return true;
+    }
+    
+    throw new Error(`SharePoint API error updating item: ${response.status}`);
+  } catch (error) {
+    console.error("Error updating SharePoint item:", error);
     throw error;
   }
 }
@@ -126,5 +175,33 @@ export async function getBuildingById(id: string): Promise<Building | null> {
   } catch (error) {
     console.error(`Error getting building with ID ${id}:`, error);
     return null;
+  }
+}
+
+// Update a building's budget values
+export async function updateBuildingBudget(
+  buildingId: string, 
+  updates: { budgeted?: number; actual?: number }
+): Promise<boolean> {
+  try {
+    const updatedFields: Record<string, any> = {};
+    
+    if (updates.budgeted !== undefined) {
+      updatedFields.Budgeted = updates.budgeted;
+    }
+    
+    if (updates.actual !== undefined) {
+      updatedFields.Actual = updates.actual;
+    }
+    
+    // Only proceed if we have fields to update
+    if (Object.keys(updatedFields).length === 0) {
+      return false;
+    }
+    
+    return await updateSharePointItem(BUILDINGS_LIST_NAME, buildingId, updatedFields);
+  } catch (error) {
+    console.error("Error updating building budget:", error);
+    throw error;
   }
 }

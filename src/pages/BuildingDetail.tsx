@@ -5,11 +5,15 @@ import { getBuildingById, getRegionById } from "@/services/sharePointService";
 import { formatCurrency } from "@/utils/formatters";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import Header from "@/components/Header";
 import { ArrowLeft } from "lucide-react";
+import { BudgetUpdateForm } from "@/components/BudgetUpdateForm";
+import { useState } from "react";
 
 const BuildingDetail = () => {
   const { buildingId, regionId } = useParams<{ buildingId: string; regionId: string }>();
+  const [activeTab, setActiveTab] = useState("overview");
   
   const { data: building, isLoading: isLoadingBuilding, isError: isErrorBuilding } = useQuery({
     queryKey: ['building', buildingId],
@@ -74,66 +78,92 @@ const BuildingDetail = () => {
           <p className="text-muted-foreground">{region ? region.name + " Region" : "Building Detail"}</p>
         </div>
         
-        <div className="grid gap-4 md:grid-cols-3">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Budget Amount</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{formatCurrency(building.budgeted)}</div>
-              <p className="text-xs text-muted-foreground">Allocated budget</p>
-            </CardContent>
-          </Card>
+        <Tabs value={activeTab} onValueChange={setActiveTab}>
+          <TabsList>
+            <TabsTrigger value="overview">Overview</TabsTrigger>
+            <TabsTrigger value="edit">Edit Budget</TabsTrigger>
+          </TabsList>
           
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Actual Spend</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{formatCurrency(building.actual)}</div>
-              <p className="text-xs text-muted-foreground">Current spend to date</p>
-            </CardContent>
-          </Card>
-          
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Variance</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className={`text-2xl font-bold ${isOverBudget ? 'text-destructive' : 'text-secondary'}`}>
-                {formatCurrency(variance)}
-              </div>
-              <p className="text-xs text-muted-foreground">
-                {isOverBudget 
-                  ? `Over budget by ${Math.abs(variancePercentage).toFixed(1)}%`
-                  : `Under budget by ${variancePercentage.toFixed(1)}%`
-                }
-              </p>
-            </CardContent>
-          </Card>
-        </div>
-        
-        <Card className="mt-6">
-          <CardHeader>
-            <CardTitle>Budget Usage</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="mb-2">
-              <div className="flex justify-between mb-1">
-                <span>Spend Progress</span>
-                <span>
-                  {formatCurrency(building.actual)} / {formatCurrency(building.budgeted)}
-                  ({percentSpent.toFixed(1)}%)
-                </span>
-              </div>
-              <Progress 
-                value={percentSpent > 100 ? 100 : percentSpent} 
-                className={isOverBudget ? 'bg-destructive/20' : 'bg-secondary/20'}
-                indicatorClassName={isOverBudget ? 'bg-destructive' : 'bg-secondary'}
-              />
+          <TabsContent value="overview" className="mt-4">
+            <div className="grid gap-4 md:grid-cols-3">
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Budget Amount</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">{formatCurrency(building.budgeted)}</div>
+                  <p className="text-xs text-muted-foreground">Allocated budget</p>
+                </CardContent>
+              </Card>
+              
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Actual Spend</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">{formatCurrency(building.actual)}</div>
+                  <p className="text-xs text-muted-foreground">Current spend to date</p>
+                </CardContent>
+              </Card>
+              
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Variance</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className={`text-2xl font-bold ${isOverBudget ? 'text-destructive' : 'text-secondary'}`}>
+                    {formatCurrency(variance)}
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    {isOverBudget 
+                      ? `Over budget by ${Math.abs(variancePercentage).toFixed(1)}%`
+                      : `Under budget by ${variancePercentage.toFixed(1)}%`
+                    }
+                  </p>
+                </CardContent>
+              </Card>
             </div>
-          </CardContent>
-        </Card>
+            
+            <Card className="mt-6">
+              <CardHeader>
+                <CardTitle>Budget Usage</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="mb-2">
+                  <div className="flex justify-between mb-1">
+                    <span>Spend Progress</span>
+                    <span>
+                      {formatCurrency(building.actual)} / {formatCurrency(building.budgeted)}
+                      ({percentSpent.toFixed(1)}%)
+                    </span>
+                  </div>
+                  <Progress 
+                    value={percentSpent > 100 ? 100 : percentSpent} 
+                    className={isOverBudget ? 'bg-destructive/20' : 'bg-secondary/20'}
+                    indicatorClassName={isOverBudget ? 'bg-destructive' : 'bg-secondary'}
+                  />
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+          
+          <TabsContent value="edit" className="mt-4">
+            <Card>
+              <CardHeader>
+                <CardTitle>Update Budget Data</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-muted-foreground mb-4">
+                  Update the budget and actual spend values for this building. Changes will be saved directly to SharePoint.
+                </p>
+                <BudgetUpdateForm 
+                  building={building} 
+                  onSuccess={() => setActiveTab("overview")} 
+                />
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
       </main>
     </div>
   );
