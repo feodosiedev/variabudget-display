@@ -1,50 +1,34 @@
 
-import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
-import { Region } from "@/types/budget";
-import { getRegionById } from "@/data/budgetData";
+import { useQuery } from "@tanstack/react-query";
+import { getRegionById } from "@/services/sharePointService";
 import { formatCurrency } from "@/utils/formatters";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import Header from "@/components/Header";
-import { ArrowLeft } from "lucide-react";
 import BuildingList from "@/components/BuildingList";
+import { ArrowLeft } from "lucide-react";
 
 const RegionDetail = () => {
   const { id } = useParams<{ id: string }>();
-  const [region, setRegion] = useState<Region | null>(null);
-  const [loading, setLoading] = useState(true);
+  
+  const { data: region, isLoading, isError } = useQuery({
+    queryKey: ['region', id],
+    queryFn: () => {
+      if (!id) throw new Error("Region ID is required");
+      return getRegionById(id);
+    },
+    staleTime: 5 * 60 * 1000, // 5 minutes
+  });
 
-  useEffect(() => {
-    // Simulate API fetch
-    const fetchData = async () => {
-      try {
-        // Small delay to simulate API call
-        await new Promise(resolve => setTimeout(resolve, 300));
-        if (id) {
-          const data = getRegionById(id);
-          if (data) {
-            setRegion(data);
-          }
-        }
-      } catch (error) {
-        console.error("Error fetching region data:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchData();
-  }, [id]);
-
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-pulse">Loading region data...</div>
+        <div className="animate-pulse">Loading region data from SharePoint...</div>
       </div>
     );
   }
 
-  if (!region) {
+  if (isError || !region) {
     return (
       <div className="min-h-screen flex flex-col">
         <Header />
@@ -53,13 +37,11 @@ const RegionDetail = () => {
             <ArrowLeft className="h-4 w-4 mr-1" />
             Back to Dashboard
           </Link>
-          <div className="text-destructive">Region not found.</div>
+          <div className="text-destructive">Region not found or error loading data.</div>
         </main>
       </div>
     );
   }
-
-  const isOverBudget = region.variance < 0;
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -71,8 +53,8 @@ const RegionDetail = () => {
         </Link>
         
         <div className="mb-6">
-          <h1 className="text-3xl font-bold">{region.name}</h1>
-          <p className="text-muted-foreground">{region.buildings.length} Buildings</p>
+          <h1 className="text-3xl font-bold">{region.name} Region</h1>
+          <p className="text-muted-foreground">Region Budget Detail</p>
         </div>
         
         <div className="grid gap-4 md:grid-cols-3">
@@ -82,9 +64,7 @@ const RegionDetail = () => {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{formatCurrency(region.totalBudgeted)}</div>
-              <p className="text-xs text-muted-foreground">
-                Planned spending for region
-              </p>
+              <p className="text-xs text-muted-foreground">Total allocated budget</p>
             </CardContent>
           </Card>
           
@@ -94,22 +74,20 @@ const RegionDetail = () => {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{formatCurrency(region.totalActual)}</div>
-              <p className="text-xs text-muted-foreground">
-                Current spending to date
-              </p>
+              <p className="text-xs text-muted-foreground">Current spend to date</p>
             </CardContent>
           </Card>
           
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Budget Variance</CardTitle>
+              <CardTitle className="text-sm font-medium">Variance</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className={`text-2xl font-bold ${isOverBudget ? 'text-destructive' : 'text-secondary'}`}>
+              <div className={`text-2xl font-bold ${region.variance < 0 ? 'text-destructive' : 'text-secondary'}`}>
                 {formatCurrency(region.variance)}
               </div>
               <p className="text-xs text-muted-foreground">
-                {isOverBudget 
+                {region.variance < 0 
                   ? `Over budget by ${Math.abs(region.variancePercentage).toFixed(1)}%`
                   : `Under budget by ${region.variancePercentage.toFixed(1)}%`
                 }
@@ -118,7 +96,16 @@ const RegionDetail = () => {
           </Card>
         </div>
         
-        <BuildingList buildings={region.buildings} regionId={region.id} />
+        <div className="mt-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Buildings in {region.name} Region</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <BuildingList buildings={region.buildings} regionId={region.id} />
+            </CardContent>
+          </Card>
+        </div>
       </main>
     </div>
   );
