@@ -2,7 +2,7 @@
 import { Building, CAFApplication, CAFSummary, Region } from "@/types/caf";
 
 // Replace these with your actual SharePoint site URL and list names
-const SHAREPOINT_SITE_URL = "https://your-tenant.sharepoint.com/sites/your-site";
+const SHAREPOINT_SITE_URL = "https://torontoseniorshousing.sharepoint.com/sites/ProgramsPartnershipsCommunityDevelopment";
 const CAF_APPLICATIONS_LIST_NAME = "CAF Tracking Responses";
 const BUILDINGS_LIST_NAME = "Buildings";
 
