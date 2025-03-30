@@ -243,13 +243,13 @@ export async function getCAFApplications(): Promise<CAFApplication[]> {
     return items.map((item: any) => ({
       id: item.ID.toString(),
       title: item.Title || "",
-      building: item.Building || "",
+      building: item.BuildingAddress || "",
       region: item.Region || "",
       requestedAmount: Number(item.RequestedAmount) || 0,
-      purchaseAmount: Number(item.PurchaseAmount) || 0,
+      purchaseAmount: Number(item.Final_x0020_Amount_x0020_Purchas) || 0,
       approvalStatus: item.ApprovalStatus || "Pending",
-      eventType: item.EventType || "One-time",
-      tenantsAttended: Number(item.TenantsAttended) || 0,
+      eventType: item.FrequencyUseOfSpace || "One-time",
+      tenantsAttended: Number(item.CountofAttendingTenants) || 0,
       pdfLink: item.PDFLink || ""
     }));
   } catch (error) {
@@ -263,16 +263,16 @@ export async function getCAFApplications(): Promise<CAFApplication[]> {
 export async function getBuildings(): Promise<Building[]> {
   try {
     // First try to get data from SharePoint
-    const items = await fetchFromSharePoint(BUILDINGS_LIST_NAME);
+    const items = await fetchFromSharePoint(Buildings);
     
     // Map SharePoint list items to our Building type
     return items.map((item: any) => ({
       id: item.ID.toString(),
       name: item.Title || "",
-      address: item.Address || "",
+      address: item.BuildingAddress || "",
       region: item.Region || "",
       originalBudget: Number(item.OriginalBudget) || 0,
-      budgetAfterPurchase: Number(item.BudgetAfterPurchase) || 0
+      budgetAfterPurchase: Number(item.%7BCDE7B2D9-18CD-4027-A415-5FFB2936C388%7D&Field=Budget) || 0
     }));
   } catch (error) {
     console.error("Error getting buildings:", error);
