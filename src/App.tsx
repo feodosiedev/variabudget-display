@@ -8,6 +8,7 @@ import Dashboard from "./pages/Dashboard";
 import RegionDetail from "./pages/RegionDetail";
 import BuildingDetail from "./pages/BuildingDetail";
 import NotFound from "./pages/NotFound";
+import Index from "./pages/Index";
 
 const queryClient = new QueryClient();
 
@@ -19,6 +20,7 @@ const App = () => (
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Dashboard />} />
+          <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/region/:id" element={<RegionDetail />} />
           <Route path="/building/:id" element={<BuildingDetail />} />
           <Route path="*" element={<NotFound />} />
