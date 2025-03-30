@@ -1,18 +1,19 @@
 
 import { Link } from "react-router-dom";
-import { DollarSign } from "lucide-react";
+import { FileText, Home } from "lucide-react";
 
 const Header = () => {
   return (
-    <header className="border-b">
+    <header className="border-b bg-white">
       <div className="container flex h-16 items-center justify-between px-4 sm:px-6">
         <Link to="/" className="flex items-center space-x-2">
-          <DollarSign className="h-6 w-6 text-primary" />
-          <span className="text-xl font-bold">Building Budget Manager</span>
+          <FileText className="h-6 w-6 text-primary" />
+          <span className="text-xl font-bold">CAF Applications Manager</span>
         </Link>
-        <nav className="hidden sm:flex items-center space-x-6 text-sm font-medium">
-          <Link to="/" className="text-foreground transition-colors hover:text-primary">
-            Dashboard
+        <nav className="flex items-center space-x-6 text-sm font-medium">
+          <Link to="/" className="flex items-center text-foreground transition-colors hover:text-primary">
+            <Home className="mr-1 h-4 w-4" />
+            <span className="hidden sm:inline">Dashboard</span>
           </Link>
         </nav>
       </div>

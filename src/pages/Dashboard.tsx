@@ -1,32 +1,51 @@
 
 import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { BudgetSummary } from "@/types/budget";
-import { getBudgetSummary } from "@/services/sharePointService";
-import BudgetSummaryCard from "@/components/BudgetSummaryCard";
-import RegionList from "@/components/RegionList";
+import { getCAFSummary } from "@/services/sharePointService";
+import { CAFSummary } from "@/types/caf";
 import Header from "@/components/Header";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Progress } from "@/components/ui/progress";
+import { Link } from "react-router-dom";
+import { Badge } from "@/components/ui/badge";
+import { formatCurrency } from "@/utils/formatters";
+import { 
+  Building, 
+  CalendarCheck, 
+  CalendarClock, 
+  ChevronRight, 
+  ClipboardCheck, 
+  FileText, 
+  MapPin, 
+  Percent, 
+  Users
+} from "lucide-react";
+import RegionList from "@/components/RegionList";
 
 const Dashboard = () => {
-  const { data: budgetData, isLoading, isError } = useQuery({
-    queryKey: ['budgetSummary'],
-    queryFn: getBudgetSummary,
+  const { data: cafSummary, isLoading, isError } = useQuery({
+    queryKey: ['cafSummary'],
+    queryFn: getCAFSummary,
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
 
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-pulse">Loading budget data from SharePoint...</div>
+        <div className="animate-pulse text-center">
+          <FileText className="h-12 w-12 mx-auto mb-4 text-muted" />
+          <div className="text-lg">Loading CAF applications data from SharePoint...</div>
+        </div>
       </div>
     );
   }
 
-  if (isError || !budgetData) {
+  if (isError || !cafSummary) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="text-destructive">
-          Error loading budget data from SharePoint. Please make sure you are logged into your Microsoft 365 account.
+        <div className="text-destructive text-center">
+          <div className="text-lg font-semibold mb-2">Error loading data from SharePoint</div>
+          <div className="text-sm">Please make sure you are logged into your Microsoft 365 account.</div>
         </div>
       </div>
     );
@@ -36,15 +55,126 @@ const Dashboard = () => {
     <div className="min-h-screen flex flex-col">
       <Header />
       <main className="flex-1 container px-4 py-6 sm:px-6 sm:py-8">
-        <div className="mb-6">
-          <h1 className="text-3xl font-bold">Budget Dashboard</h1>
-          <p className="text-muted-foreground">Showing data from SharePoint</p>
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold">CAF Applications Dashboard</h1>
+          <p className="text-muted-foreground">Track CAF applications and budgets by region</p>
         </div>
         
-        <BudgetSummaryCard summary={budgetData} />
+        {/* Summary Cards */}
+        <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-4 mb-8">
+          {/* Applications Card */}
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle className="text-sm font-medium">CAF Applications</CardTitle>
+              <FileText className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{cafSummary.totalApplications}</div>
+              <div className="flex items-center mt-1">
+                <ClipboardCheck className="mr-1 h-4 w-4 text-primary" />
+                <span className="text-sm">
+                  {cafSummary.approvedApplications} approved
+                  <Badge variant="outline" className="ml-2">
+                    {cafSummary.approvalRate.toFixed(0)}%
+                  </Badge>
+                </span>
+              </div>
+            </CardContent>
+          </Card>
+          
+          {/* Budget Card */}
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle className="text-sm font-medium">Total Budget</CardTitle>
+              <Percent className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{formatCurrency(cafSummary.totalOriginalBudget)}</div>
+              <div className="flex items-center mt-1">
+                <span className="text-sm text-muted-foreground">
+                  {formatCurrency(cafSummary.totalBudgetAfterPurchase)} remaining
+                </span>
+              </div>
+              <Progress 
+                value={(cafSummary.totalBudgetAfterPurchase / cafSummary.totalOriginalBudget) * 100} 
+                className="h-2 mt-2" 
+              />
+            </CardContent>
+          </Card>
+          
+          {/* Event Types */}
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle className="text-sm font-medium">Event Types</CardTitle>
+              <CalendarCheck className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-2">
+                <div className="flex justify-between items-center">
+                  <div className="flex items-center">
+                    <div className="w-3 h-3 rounded-full bg-primary mr-2"></div>
+                    <span className="text-sm">One-time</span>
+                  </div>
+                  <span className="text-sm font-medium">{cafSummary.oneTimeEvents}</span>
+                </div>
+                
+                <div className="flex justify-between items-center">
+                  <div className="flex items-center">
+                    <div className="w-3 h-3 rounded-full bg-blue-500 mr-2"></div>
+                    <span className="text-sm">Recurring</span>
+                  </div>
+                  <span className="text-sm font-medium">{cafSummary.recurringEvents}</span>
+                </div>
+                
+                <div className="flex justify-between items-center">
+                  <div className="flex items-center">
+                    <div className="w-3 h-3 rounded-full bg-green-500 mr-2"></div>
+                    <span className="text-sm">Tenant-led</span>
+                  </div>
+                  <span className="text-sm font-medium">{cafSummary.tenantLedEvents}</span>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+          
+          {/* Regions Overview */}
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle className="text-sm font-medium">Regions</CardTitle>
+              <MapPin className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{cafSummary.regions.length}</div>
+              <div className="text-sm text-muted-foreground mt-1">
+                {cafSummary.regions.reduce((total, region) => total + region.buildings.length, 0)} buildings total
+              </div>
+              <div className="mt-3">
+                {cafSummary.regions.slice(0, 3).map(region => (
+                  <Link
+                    key={region.id}
+                    to={`/region/${region.id}`}
+                    className="flex items-center justify-between text-sm py-1 hover:text-primary"
+                  >
+                    <span>{region.name}</span>
+                    <ChevronRight className="h-4 w-4" />
+                  </Link>
+                ))}
+                {cafSummary.regions.length > 3 && (
+                  <div className="text-xs text-center mt-1 text-muted-foreground">
+                    +{cafSummary.regions.length - 3} more regions
+                  </div>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
         
-        <div className="mt-6">
-          <RegionList regions={budgetData.regions} />
+        {/* Regions List */}
+        <div className="mt-8">
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-xl font-semibold">Regions</h2>
+          </div>
+          <RegionList regions={cafSummary.regions} />
         </div>
       </main>
     </div>

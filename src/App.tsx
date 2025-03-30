@@ -20,8 +20,7 @@ const App = () => (
         <Routes>
           <Route path="/" element={<Dashboard />} />
           <Route path="/region/:id" element={<RegionDetail />} />
-          <Route path="/region/:regionId/building/:buildingId" element={<BuildingDetail />} />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+          <Route path="/building/:id" element={<BuildingDetail />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
