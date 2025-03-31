@@ -4,7 +4,7 @@ import { Building, Region, BudgetSummary } from "@/types/budget";
 export const buildings: Building[] = [
   // North West Buildings
   { id: "BD01", address: "4455 Bathurst St", budgeted: 7946, actual: 7946, region: "north-west" },
-  { id: "BD02", address: "2567 Yonge St", budgeted: 3000, actual: 2772, region: "north-west" },
+  { id: "BD02", address: "2567 Yonge St", budgeted: 3000, actual: 2900, region: "north-west" },
   { id: "BD03", address: "3179 Yonge St", budgeted: 2904, actual: 2904, region: "north-west" },
   { id: "BD04", address: "12 King High Ave", budgeted: 818, actual: 818, region: "north-west" },
   { id: "BD05", address: "193 Wilson Avenue", budgeted: 3300, actual: 3300, region: "north-west" },
