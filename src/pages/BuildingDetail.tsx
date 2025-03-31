@@ -130,7 +130,7 @@ const BuildingDetail = () => {
               <div className="flex justify-between items-center mt-1">
                 <p className="text-xs text-muted-foreground">Original budget</p>
                 <Badge variant="outline">
-                  {formatCurrency(remainingBudget)} remaining
+                  {formatCurrency(building.budgetAfterPurchase)} remaining
                 </Badge>
               </div>
               <Progress

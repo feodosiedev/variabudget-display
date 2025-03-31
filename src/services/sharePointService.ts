@@ -61,8 +61,8 @@ export async function getCAFSummary(): Promise<CAFSummary> {
     const totalApplications = applications.length;
     const approvedApplications = applications.filter(a => a.approvalStatus === "Approved").length;
     const oneTimeEvents = applications.filter(a => a.frequency === "One-Time").length;
-    const recurringEvents = applications.filter(a => a.frequency === "Weekly" || a.frequency === "Monthly").length;
-    const tenantLedEvents = applications.filter(a => a.eventType === "Holiday Meal").length;
+    const recurringEvents = applications.filter(a => a.frequency === "Reoccurring").length;
+    const tenantLedEvents = applications.filter(a => a.eventType === "Social").length;
 
     return {
       totalApplications,

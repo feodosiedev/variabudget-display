@@ -49,9 +49,9 @@ const RegionDetail = () => {
   }
 
   // Calculate event types count
-  const oneTimeEvents = region.cafApplications.filter(caf => caf.eventType === "One-time").length;
-  const recurringEvents = region.cafApplications.filter(caf => caf.eventType === "Recurring").length;
-  const tenantLedEvents = region.cafApplications.filter(caf => caf.eventType === "Tenant-led").length;
+  const oneTimeEvents = region.cafApplications.filter(caf => caf.frequency === "One-Time").length;
+  const recurringEvents = region.cafApplications.filter(caf => caf.frequency === "Reoccurring").length;
+  const tenantLedEvents = region.cafApplications.filter(caf => caf.eventType === "Social").length;
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -81,7 +81,7 @@ const RegionDetail = () => {
               <div className="flex justify-between items-center mt-1">
                 <p className="text-xs text-muted-foreground">Original Budget</p>
                 <Badge variant="outline">
-                  {formatCurrency(region.totalRemainingBudget)} remaining
+                  {formatCurrency(region.totalBudgetAfterPurchase)} remaining
                 </Badge>
               </div>
               <Progress
