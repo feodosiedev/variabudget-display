@@ -52,7 +52,8 @@ export async function getCAFSummary(): Promise<CAFSummary> {
         approvedApplications: regionApplications.filter(a => a.approvalStatus === "Approved").length,
         approvalRate: regionApplications.length > 0 
           ? (regionApplications.filter(a => a.approvalStatus === "Approved").length / regionApplications.length) * 100 
-          : 0
+          : 0,
+        totalRemainingBudget: regionBuildings.reduce((sum, b) => sum + (b.originalBudget - b.budgetAfterPurchase), 0)
       };
     });
 
@@ -72,7 +73,8 @@ export async function getCAFSummary(): Promise<CAFSummary> {
       tenantLedEvents,
       regions,
       totalOriginalBudget: buildings.reduce((sum, b) => sum + b.originalBudget, 0),
-      totalBudgetAfterPurchase: buildings.reduce((sum, b) => sum + b.budgetAfterPurchase, 0)
+      totalBudgetAfterPurchase: buildings.reduce((sum, b) => sum + b.budgetAfterPurchase, 0),
+      totalRemainingBudget: buildings.reduce((sum, b) => sum + (b.originalBudget - b.budgetAfterPurchase), 0)
     };
   } catch (error) {
     console.error("Error getting CAF summary:", error);
@@ -85,7 +87,8 @@ export async function getCAFSummary(): Promise<CAFSummary> {
       tenantLedEvents: 0,
       regions: [],
       totalOriginalBudget: 0,
-      totalBudgetAfterPurchase: 0
+      totalBudgetAfterPurchase: 0,
+      totalRemainingBudget: 0
     };
   }
 }
