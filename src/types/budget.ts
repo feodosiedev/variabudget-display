@@ -1,10 +1,9 @@
-
 export interface Building {
   id: string;
-  name: string;
-  budgeted: number;
-  actual: number;
-  region: string;
+  address: string;  // Changed from name to address
+  budgeted: number;  // Original Budget
+  actual: number;    // Budget After Purchase
+  region: string;    // Region (north-west, south-west, north-east, south-east)
 }
 
 export interface Region {

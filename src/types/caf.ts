@@ -1,4 +1,3 @@
-
 export interface CAFApplication {
   id: string;
   title: string;
@@ -7,14 +6,19 @@ export interface CAFApplication {
   requestedAmount: number;
   purchaseAmount: number;
   approvalStatus: "Approved" | "Pending" | "Rejected";
-  eventType: "One-time" | "Recurring" | "Tenant-led";
+  eventType: "Holiday Meal" | "Games" | "Social" | "Food" | "Equipment" | "Cultural Event";
   tenantsAttended?: number;
   pdfLink?: string;
+  requiresUpdates: boolean;
+  frequency: "One-Time" | "Weekly" | "Monthly";
+  category: string;
+  scheduledDay?: string;
+  recurrenceCount?: number;
+  firstDate?: string;
 }
 
 export interface Building {
   id: string;
-  name: string;
   address: string;
   region: string;
   originalBudget: number;

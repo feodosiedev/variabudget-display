@@ -24,7 +24,7 @@ const BuildingList = ({ buildings, cafApplications }: BuildingListProps) => {
   return (
     <div className="space-y-4">
       {buildings.map((building) => {
-        const buildingCAFs = cafsByBuilding[building.name] || [];
+        const buildingCAFs = cafsByBuilding[building.address] || [];
         const approvedCAFs = buildingCAFs.filter(caf => caf.approvalStatus === "Approved");
         const approvalRate = buildingCAFs.length > 0
           ? (approvedCAFs.length / buildingCAFs.length) * 100
@@ -44,8 +44,8 @@ const BuildingList = ({ buildings, cafApplications }: BuildingListProps) => {
                       <BuildingIcon className="h-5 w-5" />
                     </div>
                     <div>
-                      <h3 className="text-lg font-semibold">{building.name}</h3>
-                      <p className="text-sm text-muted-foreground">{building.address}</p>
+                      <h3 className="text-lg font-semibold">{building.address}</h3>
+                      <p className="text-sm text-muted-foreground">Building {building.id}</p>
                     </div>
                   </div>
 
