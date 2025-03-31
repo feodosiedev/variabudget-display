@@ -28,12 +28,12 @@ const BuildingDetail = () => {
   });
 
   const { data: cafApplications, isLoading: cafsLoading, isError: cafsError } = useQuery({
-    queryKey: ['buildingCAFs', building?.name],
+    queryKey: ['buildingCAFs', building?.address],
     queryFn: () => {
-      if (!building?.name) throw new Error("Building name is required");
-      return getCAFApplicationsForBuilding(building.name);
+      if (!building?.address) throw new Error("Building address is required");
+      return getCAFApplicationsForBuilding(building.address);
     },
-    enabled: !!building?.name,
+    enabled: !!building?.address,
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
 
@@ -114,7 +114,7 @@ const BuildingDetail = () => {
           </div>
           <h1 className="text-3xl font-bold flex items-center mt-1">
             <Building className="h-6 w-6 mr-2 text-primary" />
-            {building.name}
+            {building.address}
           </h1>
           <p className="text-muted-foreground">{building.address}</p>
         </div>
