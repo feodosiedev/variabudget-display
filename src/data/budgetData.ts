@@ -76,7 +76,7 @@ export const buildings: Building[] = [
     "id": "BD11",
     "address": "41 Mabelle Ave",
     "budgeted": 9240.0,
-    "actual": 9138.75,
+    "actual": 9183.75,
     "region": "south-west"
   },
   {
@@ -132,7 +132,7 @@ export const buildings: Building[] = [
     "id": "BD19",
     "address": "55 Outlook Ave",
     "budgeted": 7260.0,
-    "actual": 7260.0,
+    "actual": 7058.72,
     "region": "north-west"
   },
   {
