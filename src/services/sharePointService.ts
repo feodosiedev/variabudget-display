@@ -1,3 +1,4 @@
+
 import { Building, CAFApplication, CAFSummary, Region } from "@/types/caf";
 import * as XLSX from 'xlsx';
 
@@ -594,9 +595,9 @@ export async function getCAFSummary(): Promise<CAFSummary> {
         recurringEvents,
         tenantLedEvents,
         regions: regionArray,
-        totalOriginalBudget: totalOriginalBudget,
-        totalBudgetAfterPurchase: totalBudgetAfterPurchase,
-        totalRemainingBudget: totalRemainingBudget
+        totalOriginalBudget,
+        totalBudgetAfterPurchase,
+        totalRemainingBudget
       };
     }
 
@@ -691,7 +692,67 @@ export async function getCAFSummary(): Promise<CAFSummary> {
     console.error("Error getting CAF summary:", error);
 
     // Return mock data for demo purposes
-    // ... existing mock data code ...
+    return {
+      totalApplications: 8,
+      approvedApplications: 6,
+      approvalRate: 75,
+      oneTimeEvents: 3,
+      recurringEvents: 3,
+      tenantLedEvents: 2,
+      regions: [
+        {
+          id: "north",
+          name: "North",
+          buildings: getMockBuildings().filter(b => b.region === "North"),
+          cafApplications: getMockCAFApplications().filter(c => c.region === "North"),
+          totalOriginalBudget: 425000,
+          totalBudgetAfterPurchase: 415000,
+          totalRemainingBudget: 10000,
+          totalApplications: 2,
+          approvedApplications: 1,
+          approvalRate: 50
+        },
+        {
+          id: "south",
+          name: "South",
+          buildings: getMockBuildings().filter(b => b.region === "South"),
+          cafApplications: getMockCAFApplications().filter(c => c.region === "South"),
+          totalOriginalBudget: 475000,
+          totalBudgetAfterPurchase: 455000,
+          totalRemainingBudget: 20000,
+          totalApplications: 2,
+          approvedApplications: 2,
+          approvalRate: 100
+        },
+        {
+          id: "east",
+          name: "East",
+          buildings: getMockBuildings().filter(b => b.region === "East"),
+          cafApplications: getMockCAFApplications().filter(c => c.region === "East"),
+          totalOriginalBudget: 445000,
+          totalBudgetAfterPurchase: 430000,
+          totalRemainingBudget: 15000,
+          totalApplications: 2,
+          approvedApplications: 2,
+          approvalRate: 100
+        },
+        {
+          id: "west",
+          name: "West",
+          buildings: getMockBuildings().filter(b => b.region === "West"),
+          cafApplications: getMockCAFApplications().filter(c => c.region === "West"),
+          totalOriginalBudget: 460000,
+          totalBudgetAfterPurchase: 440000,
+          totalRemainingBudget: 20000,
+          totalApplications: 2,
+          approvedApplications: 1,
+          approvalRate: 50
+        }
+      ],
+      totalOriginalBudget: 1805000,
+      totalBudgetAfterPurchase: 1740000,
+      totalRemainingBudget: 65000
+    };
   }
 }
 
