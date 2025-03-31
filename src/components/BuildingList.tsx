@@ -1,4 +1,3 @@
-
 import { Card, CardContent } from "@/components/ui/card";
 import { Building, CAFApplication } from "@/types/caf";
 import { formatCurrency } from "@/utils/formatters";
@@ -27,13 +26,14 @@ const BuildingList = ({ buildings, cafApplications }: BuildingListProps) => {
       {buildings.map((building) => {
         const buildingCAFs = cafsByBuilding[building.name] || [];
         const approvedCAFs = buildingCAFs.filter(caf => caf.approvalStatus === "Approved");
-        const approvalRate = buildingCAFs.length > 0 
-          ? (approvedCAFs.length / buildingCAFs.length) * 100 
+        const approvalRate = buildingCAFs.length > 0
+          ? (approvedCAFs.length / buildingCAFs.length) * 100
           : 0;
-        
-        const budgetRatio = building.budgetAfterPurchase / building.originalBudget;
-        const percentRemaining = budgetRatio * 100;
-        
+
+        // Calculate remaining budget
+        const remainingBudget = building.originalBudget - building.budgetAfterPurchase;
+        const percentRemaining = (remainingBudget / building.originalBudget) * 100;
+
         return (
           <Card key={building.id} className="overflow-hidden">
             <Link to={`/building/${building.id}`} className="block">
@@ -48,7 +48,7 @@ const BuildingList = ({ buildings, cafApplications }: BuildingListProps) => {
                       <p className="text-sm text-muted-foreground">{building.address}</p>
                     </div>
                   </div>
-                  
+
                   <div className="flex items-center">
                     <div className="flex items-center mr-3">
                       <FileText className="h-4 w-4 mr-1 text-muted-foreground" />
@@ -57,21 +57,21 @@ const BuildingList = ({ buildings, cafApplications }: BuildingListProps) => {
                     <ChevronRight className="h-5 w-5 text-muted-foreground" />
                   </div>
                 </div>
-                
+
                 <div className="grid gap-4 md:grid-cols-2">
                   <div>
                     <div className="flex justify-between mb-1">
                       <span className="text-sm font-medium">Budget</span>
                       <span className="text-sm">
-                        {formatCurrency(building.budgetAfterPurchase)} / {formatCurrency(building.originalBudget)}
+                        {formatCurrency(remainingBudget)} / {formatCurrency(building.originalBudget)}
                       </span>
                     </div>
-                    <Progress 
-                      value={percentRemaining > 100 ? 100 : percentRemaining} 
+                    <Progress
+                      value={percentRemaining > 100 ? 100 : percentRemaining}
                       className="h-2"
                     />
                   </div>
-                  
+
                   {buildingCAFs.length > 0 && (
                     <div>
                       <div className="flex justify-between mb-1">
@@ -80,8 +80,8 @@ const BuildingList = ({ buildings, cafApplications }: BuildingListProps) => {
                           {approvedCAFs.length} / {buildingCAFs.length}
                         </span>
                       </div>
-                      <Progress 
-                        value={approvalRate} 
+                      <Progress
+                        value={approvalRate}
                         className="h-2"
                       />
                     </div>

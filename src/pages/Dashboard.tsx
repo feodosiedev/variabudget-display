@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { getCAFSummary } from "@/services/sharePointService";
@@ -9,16 +8,17 @@ import { Progress } from "@/components/ui/progress";
 import { Link } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { formatCurrency } from "@/utils/formatters";
-import { 
-  Building, 
-  CalendarCheck, 
-  CalendarClock, 
-  ChevronRight, 
-  ClipboardCheck, 
-  FileText, 
-  MapPin, 
-  Percent, 
-  Users
+import {
+  Building,
+  CalendarCheck,
+  CalendarClock,
+  ChevronRight,
+  ClipboardCheck,
+  FileText,
+  MapPin,
+  Percent,
+  Users,
+  FileSpreadsheet
 } from "lucide-react";
 import RegionList from "@/components/RegionList";
 
@@ -29,12 +29,25 @@ const Dashboard = () => {
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
 
+  // Debug info for the CAF summary and regions
+  useEffect(() => {
+    if (cafSummary) {
+      console.log("CAF Summary loaded:", cafSummary);
+      console.log("Regions found:", cafSummary.regions.length);
+      console.log("Region details:", cafSummary.regions.map(r => ({
+        name: r.name,
+        buildingCount: r.buildings.length,
+        applicationCount: r.cafApplications.length,
+      })));
+    }
+  }, [cafSummary]);
+
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="animate-pulse text-center">
           <FileText className="h-12 w-12 mx-auto mb-4 text-muted" />
-          <div className="text-lg">Loading CAF applications data from SharePoint...</div>
+          <div className="text-lg">Loading data from Excel...</div>
         </div>
       </div>
     );
@@ -44,8 +57,8 @@ const Dashboard = () => {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-destructive text-center">
-          <div className="text-lg font-semibold mb-2">Error loading data from SharePoint</div>
-          <div className="text-sm">Please make sure you are logged into your Microsoft 365 account.</div>
+          <div className="text-lg font-semibold mb-2">Error loading data</div>
+          <div className="text-sm">Please check that the Excel file is correctly formatted and accessible.</div>
         </div>
       </div>
     );
@@ -59,7 +72,7 @@ const Dashboard = () => {
           <h1 className="text-3xl font-bold">CAF Applications Dashboard</h1>
           <p className="text-muted-foreground">Track CAF applications and budgets by region</p>
         </div>
-        
+
         {/* Summary Cards */}
         <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-4 mb-8">
           {/* Applications Card */}
@@ -81,7 +94,7 @@ const Dashboard = () => {
               </div>
             </CardContent>
           </Card>
-          
+
           {/* Budget Card */}
           <Card>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
@@ -92,16 +105,16 @@ const Dashboard = () => {
               <div className="text-2xl font-bold">{formatCurrency(cafSummary.totalOriginalBudget)}</div>
               <div className="flex items-center mt-1">
                 <span className="text-sm text-muted-foreground">
-                  {formatCurrency(cafSummary.totalBudgetAfterPurchase)} remaining
+                  {formatCurrency(cafSummary.totalRemainingBudget)} remaining
                 </span>
               </div>
-              <Progress 
-                value={(cafSummary.totalBudgetAfterPurchase / cafSummary.totalOriginalBudget) * 100} 
-                className="h-2 mt-2" 
+              <Progress
+                value={(cafSummary.totalRemainingBudget / cafSummary.totalOriginalBudget) * 100}
+                className="h-2 mt-2"
               />
             </CardContent>
           </Card>
-          
+
           {/* Event Types */}
           <Card>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
@@ -117,7 +130,7 @@ const Dashboard = () => {
                   </div>
                   <span className="text-sm font-medium">{cafSummary.oneTimeEvents}</span>
                 </div>
-                
+
                 <div className="flex justify-between items-center">
                   <div className="flex items-center">
                     <div className="w-3 h-3 rounded-full bg-blue-500 mr-2"></div>
@@ -125,7 +138,7 @@ const Dashboard = () => {
                   </div>
                   <span className="text-sm font-medium">{cafSummary.recurringEvents}</span>
                 </div>
-                
+
                 <div className="flex justify-between items-center">
                   <div className="flex items-center">
                     <div className="w-3 h-3 rounded-full bg-green-500 mr-2"></div>
@@ -136,7 +149,7 @@ const Dashboard = () => {
               </div>
             </CardContent>
           </Card>
-          
+
           {/* Regions Overview */}
           <Card>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
@@ -168,13 +181,24 @@ const Dashboard = () => {
             </CardContent>
           </Card>
         </div>
-        
+
         {/* Regions List */}
         <div className="mt-8">
           <div className="flex justify-between items-center mb-4">
-            <h2 className="text-xl font-semibold">Regions</h2>
+            <h2 className="text-xl font-semibold">Regions ({cafSummary.regions.length})</h2>
           </div>
-          <RegionList regions={cafSummary.regions} />
+
+          {cafSummary.regions.length === 0 ? (
+            <div className="p-6 text-center border rounded-lg bg-muted/10">
+              <MapPin className="h-10 w-10 mx-auto mb-2 text-muted" />
+              <h3 className="text-lg font-medium mb-1">No Regions Found</h3>
+              <p className="text-sm text-muted-foreground max-w-md mx-auto">
+                No regions found in the Excel file. Please ensure your Excel file has a 'Region' column with region names.
+              </p>
+            </div>
+          ) : (
+            <RegionList regions={cafSummary.regions} />
+          )}
         </div>
       </main>
     </div>

@@ -1,4 +1,3 @@
-
 import { useParams, Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { getBuildingById, getCAFApplicationsForBuilding, updateCAFApplication } from "@/services/sharePointService";
@@ -18,7 +17,7 @@ import { toast } from "sonner";
 const BuildingDetail = () => {
   const { id } = useParams<{ id: string }>();
   const queryClient = useQueryClient();
-  
+
   const { data: building, isLoading: buildingLoading, isError: buildingError } = useQuery({
     queryKey: ['building', id],
     queryFn: () => {
@@ -51,7 +50,7 @@ const BuildingDetail = () => {
       console.error("Update error:", error);
     }
   });
-  
+
   const isLoading = buildingLoading || cafsLoading;
   const isError = buildingError || cafsError;
 
@@ -95,6 +94,9 @@ const BuildingDetail = () => {
   const totalRequestedAmount = cafApplications?.reduce((sum, caf) => sum + caf.requestedAmount, 0) || 0;
   const totalPurchaseAmount = cafApplications?.reduce((sum, caf) => sum + caf.purchaseAmount, 0) || 0;
 
+  // Calculate remaining budget
+  const remainingBudget = building.originalBudget - building.budgetAfterPurchase;
+
   return (
     <div className="min-h-screen flex flex-col">
       <Header />
@@ -103,7 +105,7 @@ const BuildingDetail = () => {
           <ArrowLeft className="h-4 w-4 mr-1" />
           Back to Dashboard
         </Link>
-        
+
         <div className="mb-6">
           <div className="flex items-center">
             <Badge variant="outline" className="mr-2">
@@ -116,7 +118,7 @@ const BuildingDetail = () => {
           </h1>
           <p className="text-muted-foreground">{building.address}</p>
         </div>
-        
+
         <div className="grid gap-4 md:grid-cols-3 mb-8">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -128,16 +130,16 @@ const BuildingDetail = () => {
               <div className="flex justify-between items-center mt-1">
                 <p className="text-xs text-muted-foreground">Original budget</p>
                 <Badge variant="outline">
-                  {formatCurrency(building.budgetAfterPurchase)} remaining
+                  {formatCurrency(remainingBudget)} remaining
                 </Badge>
               </div>
-              <Progress 
-                value={(building.budgetAfterPurchase / building.originalBudget) * 100} 
-                className="h-2 mt-2" 
+              <Progress
+                value={(remainingBudget / building.originalBudget) * 100}
+                className="h-2 mt-2"
               />
             </CardContent>
           </Card>
-          
+
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">CAF Applications</CardTitle>
@@ -151,13 +153,13 @@ const BuildingDetail = () => {
                   {approvedCAFs} approved ({approvalRate.toFixed(0)}%)
                 </Badge>
               </div>
-              <Progress 
-                value={approvalRate} 
-                className="h-2 mt-2" 
+              <Progress
+                value={approvalRate}
+                className="h-2 mt-2"
               />
             </CardContent>
           </Card>
-          
+
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Spending</CardTitle>
@@ -171,22 +173,22 @@ const BuildingDetail = () => {
                   vs {formatCurrency(totalRequestedAmount)} requested
                 </Badge>
               </div>
-              <Progress 
-                value={(totalPurchaseAmount / totalRequestedAmount) * 100} 
-                className="h-2 mt-2" 
+              <Progress
+                value={(totalPurchaseAmount / totalRequestedAmount) * 100}
+                className="h-2 mt-2"
               />
             </CardContent>
           </Card>
         </div>
-        
+
         <div className="mb-8">
           <h2 className="text-xl font-semibold mb-4 flex items-center">
             <FileText className="h-5 w-5 mr-2" />
             CAF Applications
           </h2>
           {cafApplications && cafApplications.length > 0 ? (
-            <CAFApplicationList 
-              cafApplications={cafApplications} 
+            <CAFApplicationList
+              cafApplications={cafApplications}
               onUpdateAttendance={handleUpdateAttendance}
               isUpdating={updateCAFMutation.isPending}
             />

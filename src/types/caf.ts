@@ -1,4 +1,3 @@
-
 export interface CAFApplication {
   id: string;
   title: string;
@@ -28,6 +27,7 @@ export interface Region {
   cafApplications: CAFApplication[];
   totalOriginalBudget: number;
   totalBudgetAfterPurchase: number;
+  totalRemainingBudget: number;
   totalApplications: number;
   approvedApplications: number;
   approvalRate: number;
@@ -43,4 +43,17 @@ export interface CAFSummary {
   regions: Region[];
   totalOriginalBudget: number;
   totalBudgetAfterPurchase: number;
+  totalRemainingBudget: number;
+}
+
+export interface CAFStatistics {
+  totalApplications: number;
+  cafTypes: Map<string, number>;
+  eventTypes: {
+    oneTime: number;
+    recurring: number;
+    tenantLed: number;
+  };
+  regions: Map<string, number>;
+  buildings: Map<string, number>;
 }
