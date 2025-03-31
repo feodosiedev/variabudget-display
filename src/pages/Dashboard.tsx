@@ -102,10 +102,10 @@ const Dashboard = () => {
               <Percent className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{formatCurrency(cafSummary.totalBudgetAfterPurchase)}</div>
+              <div className="text-2xl font-bold">{formatCurrency(cafSummary.totalOriginalBudget)}</div>
               <div className="flex items-center mt-1">
                 <span className="text-sm text-muted-foreground">
-                  {formatCurrency(cafSummary.totalRemainingBudget)} remaining
+                  {formatCurrency(cafSummary.totalBudgetAfterPurchase)} remaining
                 </span>
               </div>
               <Progress
