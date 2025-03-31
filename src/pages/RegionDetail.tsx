@@ -1,4 +1,3 @@
-
 import { useParams, Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { getRegionById, getCAFApplicationsForBuilding } from "@/services/sharePointService";
@@ -13,7 +12,7 @@ import BuildingList from "@/components/BuildingList";
 
 const RegionDetail = () => {
   const { id } = useParams<{ id: string }>();
-  
+
   const { data: region, isLoading, isError } = useQuery({
     queryKey: ['region', id],
     queryFn: () => {
@@ -62,7 +61,7 @@ const RegionDetail = () => {
           <ArrowLeft className="h-4 w-4 mr-1" />
           Back to Dashboard
         </Link>
-        
+
         <div className="mb-6">
           <h1 className="text-3xl font-bold flex items-center">
             <MapPin className="h-6 w-6 mr-2 text-primary" />
@@ -70,7 +69,7 @@ const RegionDetail = () => {
           </h1>
           <p className="text-muted-foreground">CAF applications and budget summary</p>
         </div>
-        
+
         <div className="grid gap-4 md:grid-cols-3 mb-8">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -80,18 +79,18 @@ const RegionDetail = () => {
             <CardContent>
               <div className="text-2xl font-bold">{formatCurrency(region.totalOriginalBudget)}</div>
               <div className="flex justify-between items-center mt-1">
-                <p className="text-xs text-muted-foreground">Total allocated budget</p>
+                <p className="text-xs text-muted-foreground">Original Budget</p>
                 <Badge variant="outline">
-                  {formatCurrency(region.totalBudgetAfterPurchase)} remaining
+                  {formatCurrency(region.totalRemainingBudget)} remaining
                 </Badge>
               </div>
-              <Progress 
-                value={(region.totalBudgetAfterPurchase / region.totalOriginalBudget) * 100} 
-                className="h-2 mt-2" 
+              <Progress
+                value={(region.totalRemainingBudget / region.totalOriginalBudget) * 100}
+                className="h-2 mt-2"
               />
             </CardContent>
           </Card>
-          
+
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">CAF Applications</CardTitle>
@@ -105,13 +104,13 @@ const RegionDetail = () => {
                   {region.approvedApplications} approved ({region.approvalRate.toFixed(0)}%)
                 </Badge>
               </div>
-              <Progress 
-                value={region.approvalRate} 
-                className="h-2 mt-2" 
+              <Progress
+                value={region.approvalRate}
+                className="h-2 mt-2"
               />
             </CardContent>
           </Card>
-          
+
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Event Types</CardTitle>
@@ -135,7 +134,7 @@ const RegionDetail = () => {
             </CardContent>
           </Card>
         </div>
-        
+
         <div className="mb-8">
           <h2 className="text-xl font-semibold mb-4 flex items-center">
             <Building className="h-5 w-5 mr-2" />
