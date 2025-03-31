@@ -6,15 +6,19 @@ export interface CAFApplication {
   requestedAmount: number;
   purchaseAmount: number;
   approvalStatus: "Approved" | "Pending" | "Rejected";
-  eventType: "Holiday Meal" | "Games" | "Social" | "Food" | "Equipment" | "Cultural Event";
+  eventType: "Holiday Meal" | "Games" | "Social" | "Food" | "Equipment" | "Cultural Event" | string;
   tenantsAttended?: number;
   pdfLink?: string;
   requiresUpdates: boolean;
-  frequency: "One-Time" | "Weekly" | "Monthly";
+  frequency: "One-Time" | "Weekly" | "Monthly" | 'Reoccurring';
   category: string;
   scheduledDay?: string;
   recurrenceCount?: number;
   firstDate?: string;
+  applicantName?: string;
+  daysOfWeek?: string[];
+  otherFrequency?: string;
+  typeOfFrequency?: string;
 }
 
 export interface Building {
