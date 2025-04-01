@@ -12,6 +12,10 @@
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.0",
+    "@microsoft/sp-http": "^1.20.0",
+    "@pnp/logging": "^4.11.0",
+    "@pnp/nodejs": "^4.11.0",
+    "@pnp/sp": "^4.11.0",
     "@radix-ui/react-accordion": "^1.2.0",
     "@radix-ui/react-alert-dialog": "^1.1.1",
     "@radix-ui/react-aspect-ratio": "^1.1.0",

@@ -1,7 +1,6 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { getCAFSummary } from "@/services/sharePointService";
-import { CAFSummary } from "@/types/caf";
 import Header from "@/components/Header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
@@ -17,8 +16,6 @@ import {
   FileText,
   MapPin,
   Percent,
-  Users,
-  FileSpreadsheet
 } from "lucide-react";
 import RegionList from "@/components/RegionList";
 
@@ -27,6 +24,8 @@ const Dashboard = () => {
     queryKey: ['cafSummary'],
     queryFn: getCAFSummary,
     staleTime: 5 * 60 * 1000, // 5 minutes
+    retry: 2,
+    refetchOnWindowFocus: false,
   });
 
   // Debug info for the CAF summary and regions
@@ -47,7 +46,7 @@ const Dashboard = () => {
       <div className="min-h-screen flex items-center justify-center">
         <div className="animate-pulse text-center">
           <FileText className="h-12 w-12 mx-auto mb-4 text-muted" />
-          <div className="text-lg">Loading data from Excel...</div>
+          <div className="text-lg">Loading data from SharePoint...</div>
         </div>
       </div>
     );
@@ -58,7 +57,7 @@ const Dashboard = () => {
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-destructive text-center">
           <div className="text-lg font-semibold mb-2">Error loading data</div>
-          <div className="text-sm">Please check that the Excel file is correctly formatted and accessible.</div>
+          <div className="text-sm">Please check that the SharePoint connection is configured correctly.</div>
         </div>
       </div>
     );
