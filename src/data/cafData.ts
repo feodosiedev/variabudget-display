@@ -570,7 +570,7 @@ export const cafApplications: CAFApplication[] = [
     "building": "55 Outlook Ave",
     "region": "North West",
     "requestedAmount": 60.0,
-    "purchaseAmount": 97.49,
+    "purchaseAmount": 201,
     "approvalStatus": "Pending",
     "eventType": "Food",
     "tenantsAttended": 0,
