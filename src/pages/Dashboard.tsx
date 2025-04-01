@@ -20,7 +20,9 @@ import {
 import RegionList from "@/components/RegionList";
 
 const Dashboard = () => {
-  const { data: cafSummary, isLoading, isError } = useQuery({
+  console.log("Dashboard component initialized");
+  
+  const { data: cafSummary, isLoading, isError, error } = useQuery({
     queryKey: ['cafSummary'],
     queryFn: getCAFSummary,
     staleTime: 5 * 60 * 1000, // 5 minutes
@@ -39,7 +41,10 @@ const Dashboard = () => {
         applicationCount: r.cafApplications.length,
       })));
     }
-  }, [cafSummary]);
+    if (isError) {
+      console.error("Error loading CAF Summary:", error);
+    }
+  }, [cafSummary, isError, error]);
 
   if (isLoading) {
     return (
