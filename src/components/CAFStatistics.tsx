@@ -1,21 +1,30 @@
+
 import React, { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Grid } from '@/components/ui/grid';
 import { CAFStatistics } from '@/types/caf';
-import { processExcelData } from '@/services/csvService';
+import { fetchCAFApplications, calculateCAFStatistics } from '@/services/supabaseService';
+import { useToast } from '@/hooks/use-toast';
 
 const CAFStatisticsComponent: React.FC = () => {
   const [statistics, setStatistics] = useState<CAFStatistics | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const { toast } = useToast();
 
   useEffect(() => {
     const loadData = async () => {
       try {
-        const data = await processExcelData();
-        setStatistics(data);
+        const cafApplications = await fetchCAFApplications();
+        const stats = calculateCAFStatistics(cafApplications);
+        setStatistics(stats);
       } catch (err) {
-        setError('Failed to process Excel file');
+        setError('Failed to fetch data from Supabase');
+        toast({
+          title: 'Error',
+          description: 'Failed to load CAF statistics data',
+          variant: 'destructive',
+        });
         console.error(err);
       } finally {
         setIsLoading(false);
@@ -23,7 +32,7 @@ const CAFStatisticsComponent: React.FC = () => {
     };
 
     loadData();
-  }, []);
+  }, [toast]);
 
   return (
     <div className="space-y-4">
@@ -36,7 +45,7 @@ const CAFStatisticsComponent: React.FC = () => {
       )}
 
       {isLoading && (
-        <div className="text-center p-4">Loading data from Excel file...</div>
+        <div className="text-center p-4">Loading data from Supabase...</div>
       )}
 
       {statistics && (

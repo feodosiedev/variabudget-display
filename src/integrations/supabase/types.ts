@@ -9,7 +9,111 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      buildings: {
+        Row: {
+          address: string
+          budget_after_purchase: number
+          created_at: string
+          id: string
+          original_budget: number
+          region: string
+          updated_at: string
+        }
+        Insert: {
+          address: string
+          budget_after_purchase?: number
+          created_at?: string
+          id?: string
+          original_budget?: number
+          region: string
+          updated_at?: string
+        }
+        Update: {
+          address?: string
+          budget_after_purchase?: number
+          created_at?: string
+          id?: string
+          original_budget?: number
+          region?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      caf_applications: {
+        Row: {
+          applicant_name: string | null
+          approval_status: string
+          building: string
+          category: string
+          created_at: string
+          days_of_week: string[] | null
+          event_type: string
+          first_date: string | null
+          frequency: string
+          id: string
+          other_frequency: string | null
+          pdf_link: string | null
+          purchase_amount: number
+          recurrence_count: number | null
+          region: string
+          requested_amount: number
+          requires_updates: boolean
+          scheduled_day: string | null
+          tenants_attended: number | null
+          title: string
+          type_of_frequency: string | null
+          updated_at: string
+        }
+        Insert: {
+          applicant_name?: string | null
+          approval_status?: string
+          building: string
+          category: string
+          created_at?: string
+          days_of_week?: string[] | null
+          event_type: string
+          first_date?: string | null
+          frequency?: string
+          id?: string
+          other_frequency?: string | null
+          pdf_link?: string | null
+          purchase_amount?: number
+          recurrence_count?: number | null
+          region: string
+          requested_amount?: number
+          requires_updates?: boolean
+          scheduled_day?: string | null
+          tenants_attended?: number | null
+          title: string
+          type_of_frequency?: string | null
+          updated_at?: string
+        }
+        Update: {
+          applicant_name?: string | null
+          approval_status?: string
+          building?: string
+          category?: string
+          created_at?: string
+          days_of_week?: string[] | null
+          event_type?: string
+          first_date?: string | null
+          frequency?: string
+          id?: string
+          other_frequency?: string | null
+          pdf_link?: string | null
+          purchase_amount?: number
+          recurrence_count?: number | null
+          region?: string
+          requested_amount?: number
+          requires_updates?: boolean
+          scheduled_day?: string | null
+          tenants_attended?: number | null
+          title?: string
+          type_of_frequency?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
