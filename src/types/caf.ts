@@ -1,32 +1,38 @@
 export interface CAFApplication {
   id: string;
   title: string;
-  building: string;
+  building: string; // Building Address
   region: string;
   requestedAmount: number;
-  purchaseAmount: number;
+  purchaseAmount: number; // Final Amount Purchased
   approvalStatus: "Approved" | "Pending" | "Rejected";
-  eventType: "Holiday Meal" | "Games" | "Social" | "Food" | "Equipment" | "Cultural Event" | string;
-  tenantsAttended?: number;
-  pdfLink?: string;
-  requiresUpdates: boolean;
-  frequency: "One-Time" | "Weekly" | "Monthly" | 'Reoccurring';
+  eventType: string; // CAF Type
+  tenantsAttended?: number; // Count of Attending Tenants
+  pdfLink?: string; // Attachment Links
+  requiresUpdates: boolean; // Status
+  frequency: "One-Time" | "Weekly" | "Monthly" | "Reoccurring"; // Frequency of Event
   category: string;
-  scheduledDay?: string;
-  recurrenceCount?: number;
-  firstDate?: string;
+  scheduledDay?: string; // Part of CAF Reoccurring Dates
+  recurrenceCount?: number; // Frequency of Event Reoccurring
+  firstDate?: string; // First date CAF will take place
   applicantName?: string;
-  daysOfWeek?: string[];
-  otherFrequency?: string;
-  typeOfFrequency?: string;
+  daysOfWeek?: string[]; // Days of Week Requested
+  otherFrequency?: string; // Other frequency for Use of Space
+  typeOfFrequency?: string; // Type of Frequency
+  receivedDate?: string; // Received Date
+  approverName?: string; // Approver's Name
+  approvalDate?: string; // Approval Date
+  purchaserComment?: string; // Purchaser's Comment
+  cafDescription?: string; // CAFDesc
 }
 
 export interface Building {
-  id: string;
-  address: string;
+  id: string; // Building Code
+  address: string; // Building Address
   region: string;
   originalBudget: number;
   budgetAfterPurchase: number;
+  status?: string; // Status Requested amount
 }
 
 export interface Region {

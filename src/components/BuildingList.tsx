@@ -12,8 +12,8 @@ import { useToast } from "@/hooks/use-toast";
 interface BuildingListProps {
   initialBuildings?: Building[];
   initialCafApplications?: CAFApplication[];
-  buildings?: Building[]; // Add this for RegionDetail component compatibility
-  cafApplications?: CAFApplication[]; // Add this for RegionDetail component compatibility
+  buildings?: Building[]; // For RegionDetail component compatibility
+  cafApplications?: CAFApplication[]; // For RegionDetail component compatibility
 }
 
 const BuildingList = ({ 

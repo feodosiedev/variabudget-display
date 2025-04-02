@@ -1,6 +1,7 @@
 
 import { supabase } from "@/integrations/supabase/client";
 import { Building, CAFApplication, CAFStatistics } from "@/types/caf";
+import { Database } from "@/integrations/supabase/types";
 
 // Fetch all buildings
 export const fetchBuildings = async (): Promise<Building[]> => {
@@ -20,7 +21,8 @@ export const fetchBuildings = async (): Promise<Building[]> => {
     address: item.address,
     region: item.region,
     originalBudget: Number(item.original_budget),
-    budgetAfterPurchase: Number(item.budget_after_purchase)
+    budgetAfterPurchase: Number(item.budget_after_purchase),
+    status: item.status
   }));
 };
 
@@ -47,7 +49,8 @@ export const fetchBuildingById = async (id: string): Promise<Building | null> =>
     address: data.address,
     region: data.region,
     originalBudget: Number(data.original_budget),
-    budgetAfterPurchase: Number(data.budget_after_purchase)
+    budgetAfterPurchase: Number(data.budget_after_purchase),
+    status: data.status
   };
 };
 
@@ -84,7 +87,12 @@ export const fetchCAFApplications = async (): Promise<CAFApplication[]> => {
     applicantName: item.applicant_name,
     daysOfWeek: item.days_of_week,
     otherFrequency: item.other_frequency,
-    typeOfFrequency: item.type_of_frequency
+    typeOfFrequency: item.type_of_frequency,
+    receivedDate: item.received_date,
+    approverName: item.approver_name,
+    approvalDate: item.approval_date,
+    purchaserComment: item.purchaser_comment,
+    cafDescription: item.caf_description
   }));
 };
 
@@ -122,7 +130,12 @@ export const fetchCAFApplicationsByBuilding = async (buildingAddress: string): P
     applicantName: item.applicant_name,
     daysOfWeek: item.days_of_week,
     otherFrequency: item.other_frequency,
-    typeOfFrequency: item.type_of_frequency
+    typeOfFrequency: item.type_of_frequency,
+    receivedDate: item.received_date,
+    approverName: item.approver_name,
+    approvalDate: item.approval_date,
+    purchaserComment: item.purchaser_comment,
+    cafDescription: item.caf_description
   }));
 };
 
