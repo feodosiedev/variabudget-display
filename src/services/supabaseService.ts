@@ -13,6 +13,8 @@ export const fetchBuildings = async (): Promise<Building[]> => {
     throw error;
   }
 
+  if (!data) return [];
+
   return data.map(item => ({
     id: item.id,
     address: item.address,
@@ -38,6 +40,8 @@ export const fetchBuildingById = async (id: string): Promise<Building | null> =>
     throw error;
   }
 
+  if (!data) return null;
+
   return {
     id: data.id,
     address: data.address,
@@ -57,6 +61,8 @@ export const fetchCAFApplications = async (): Promise<CAFApplication[]> => {
     console.error('Error fetching CAF applications:', error);
     throw error;
   }
+
+  if (!data) return [];
 
   return data.map(item => ({
     id: item.id,
@@ -93,6 +99,8 @@ export const fetchCAFApplicationsByBuilding = async (buildingAddress: string): P
     console.error('Error fetching CAF applications for building:', error);
     throw error;
   }
+
+  if (!data) return [];
 
   return data.map(item => ({
     id: item.id,

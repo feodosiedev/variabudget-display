@@ -12,17 +12,32 @@ import { useToast } from "@/hooks/use-toast";
 interface BuildingListProps {
   initialBuildings?: Building[];
   initialCafApplications?: CAFApplication[];
+  buildings?: Building[]; // Add this for RegionDetail component compatibility
+  cafApplications?: CAFApplication[]; // Add this for RegionDetail component compatibility
 }
 
-const BuildingList = ({ initialBuildings, initialCafApplications }: BuildingListProps) => {
-  const [buildings, setBuildings] = useState<Building[]>(initialBuildings || []);
-  const [cafApplications, setCafApplications] = useState<CAFApplication[]>(initialCafApplications || []);
-  const [isLoading, setIsLoading] = useState(!initialBuildings || !initialCafApplications);
+const BuildingList = ({ 
+  initialBuildings, 
+  initialCafApplications,
+  buildings,
+  cafApplications 
+}: BuildingListProps) => {
+  const [localBuildings, setLocalBuildings] = useState<Building[]>(
+    initialBuildings || buildings || []
+  );
+  const [localCafApplications, setLocalCafApplications] = useState<CAFApplication[]>(
+    initialCafApplications || cafApplications || []
+  );
+  const [isLoading, setIsLoading] = useState(
+    !initialBuildings && !buildings || !initialCafApplications && !cafApplications
+  );
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
 
   useEffect(() => {
-    if (initialBuildings && initialCafApplications) {
+    if ((initialBuildings || buildings) && (initialCafApplications || cafApplications)) {
+      setLocalBuildings(initialBuildings || buildings || []);
+      setLocalCafApplications(initialCafApplications || cafApplications || []);
       return; // Use provided data if available
     }
 
@@ -33,8 +48,8 @@ const BuildingList = ({ initialBuildings, initialCafApplications }: BuildingList
           fetchBuildings(),
           fetchCAFApplications()
         ]);
-        setBuildings(buildingsData);
-        setCafApplications(cafData);
+        setLocalBuildings(buildingsData);
+        setLocalCafApplications(cafData);
       } catch (err) {
         console.error("Error loading data:", err);
         setError("Failed to load data from Supabase");
@@ -49,10 +64,10 @@ const BuildingList = ({ initialBuildings, initialCafApplications }: BuildingList
     };
 
     loadData();
-  }, [initialBuildings, initialCafApplications, toast]);
+  }, [initialBuildings, initialCafApplications, buildings, cafApplications, toast]);
 
   // Group CAF applications by building
-  const cafsByBuilding = cafApplications.reduce((acc, caf) => {
+  const cafsByBuilding = localCafApplications.reduce((acc, caf) => {
     if (!acc[caf.building]) {
       acc[caf.building] = [];
     }
@@ -70,10 +85,10 @@ const BuildingList = ({ initialBuildings, initialCafApplications }: BuildingList
 
   return (
     <div className="space-y-4">
-      {buildings.length === 0 ? (
+      {localBuildings.length === 0 ? (
         <div className="text-center p-4">No buildings found</div>
       ) : (
-        buildings.map((building) => {
+        localBuildings.map((building) => {
           const buildingCAFs = cafsByBuilding[building.address] || [];
           const approvedCAFs = buildingCAFs.filter(caf => caf.approvalStatus === "Approved");
           const approvalRate = buildingCAFs.length > 0

@@ -12,16 +12,18 @@ import { useToast } from "@/hooks/use-toast";
 
 interface RegionListProps {
   initialRegions?: Region[];
+  regions?: Region[]; // Add this for Dashboard component compatibility
 }
 
-const RegionList = ({ initialRegions }: RegionListProps) => {
-  const [regions, setRegions] = useState<Region[]>(initialRegions || []);
-  const [isLoading, setIsLoading] = useState(!initialRegions);
+const RegionList = ({ initialRegions, regions }: RegionListProps) => {
+  const [localRegions, setLocalRegions] = useState<Region[]>(initialRegions || regions || []);
+  const [isLoading, setIsLoading] = useState(!initialRegions && !regions);
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
 
   useEffect(() => {
-    if (initialRegions) {
+    if (initialRegions || regions) {
+      setLocalRegions(initialRegions || regions || []);
       return; // Use provided regions data if available
     }
 
@@ -52,20 +54,23 @@ const RegionList = ({ initialRegions }: RegionListProps) => {
           // Calculate total budgets
           const totalOriginalBudget = regionBuildings.reduce((sum, building) => sum + building.originalBudget, 0);
           const totalBudgetAfterPurchase = regionBuildings.reduce((sum, building) => sum + building.budgetAfterPurchase, 0);
+          const totalRemainingBudget = totalOriginalBudget - totalBudgetAfterPurchase;
           
           return {
             id: name.toLowerCase().replace(/\s+/g, '-'), // Create an ID from the region name
             name,
             buildings: regionBuildings,
+            cafApplications: regionApps,
             totalApplications: regionApps.length,
             approvedApplications: approvedApps.length,
             approvalRate: regionApps.length > 0 ? (approvedApps.length / regionApps.length) * 100 : 0,
             totalOriginalBudget,
-            totalBudgetAfterPurchase
+            totalBudgetAfterPurchase,
+            totalRemainingBudget
           };
         });
 
-        setRegions(regionData);
+        setLocalRegions(regionData);
       } catch (err) {
         console.error("Error loading regions data:", err);
         setError("Failed to load regions data from Supabase");
@@ -80,7 +85,7 @@ const RegionList = ({ initialRegions }: RegionListProps) => {
     };
 
     loadRegionsData();
-  }, [initialRegions, toast]);
+  }, [initialRegions, regions, toast]);
 
   if (isLoading) {
     return <div className="text-center p-4">Loading regions data...</div>;
@@ -92,10 +97,10 @@ const RegionList = ({ initialRegions }: RegionListProps) => {
 
   return (
     <div className="space-y-4">
-      {regions.length === 0 ? (
+      {localRegions.length === 0 ? (
         <div className="text-center p-4">No regions found</div>
       ) : (
-        regions.map((region) => {
+        localRegions.map((region) => {
           // Handle case when totalOriginalBudget is zero
           const originalBudget = region.totalOriginalBudget || 100000;
           const budgetAfterPurchase = region.totalBudgetAfterPurchase || 80000;
