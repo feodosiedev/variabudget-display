@@ -71,7 +71,7 @@ export const fetchCAFApplications = async (): Promise<CAFApplication[]> => {
     region: item.region,
     requestedAmount: Number(item.requested_amount),
     purchaseAmount: Number(item.purchase_amount),
-    approvalStatus: item.approval_status,
+    approvalStatus: validateApprovalStatus(item.approval_status),
     eventType: item.event_type,
     tenantsAttended: item.tenants_attended,
     pdfLink: item.pdf_link,
@@ -109,7 +109,7 @@ export const fetchCAFApplicationsByBuilding = async (buildingAddress: string): P
     region: item.region,
     requestedAmount: Number(item.requested_amount),
     purchaseAmount: Number(item.purchase_amount),
-    approvalStatus: item.approval_status,
+    approvalStatus: validateApprovalStatus(item.approval_status),
     eventType: item.event_type,
     tenantsAttended: item.tenants_attended,
     pdfLink: item.pdf_link,
@@ -125,6 +125,16 @@ export const fetchCAFApplicationsByBuilding = async (buildingAddress: string): P
     typeOfFrequency: item.type_of_frequency
   }));
 };
+
+// Helper function to validate approval status to match the expected union type
+function validateApprovalStatus(status: string): "Approved" | "Pending" | "Rejected" {
+  if (status === "Approved" || status === "Pending" || status === "Rejected") {
+    return status as "Approved" | "Pending" | "Rejected";
+  }
+  // Default to "Pending" if an invalid status is provided
+  console.warn(`Invalid approval status: ${status}, defaulting to "Pending"`);
+  return "Pending";
+}
 
 // Calculate CAF Statistics from data
 export const calculateCAFStatistics = (cafApplications: CAFApplication[]): CAFStatistics => {
