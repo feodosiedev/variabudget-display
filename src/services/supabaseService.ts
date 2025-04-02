@@ -76,7 +76,7 @@ export const fetchCAFApplications = async (): Promise<CAFApplication[]> => {
     tenantsAttended: item.tenants_attended,
     pdfLink: item.pdf_link,
     requiresUpdates: item.requires_updates,
-    frequency: item.frequency,
+    frequency: validateFrequency(item.frequency),
     category: item.category,
     scheduledDay: item.scheduled_day,
     recurrenceCount: item.recurrence_count,
@@ -114,7 +114,7 @@ export const fetchCAFApplicationsByBuilding = async (buildingAddress: string): P
     tenantsAttended: item.tenants_attended,
     pdfLink: item.pdf_link,
     requiresUpdates: item.requires_updates,
-    frequency: item.frequency,
+    frequency: validateFrequency(item.frequency),
     category: item.category,
     scheduledDay: item.scheduled_day,
     recurrenceCount: item.recurrence_count,
@@ -134,6 +134,16 @@ function validateApprovalStatus(status: string): "Approved" | "Pending" | "Rejec
   // Default to "Pending" if an invalid status is provided
   console.warn(`Invalid approval status: ${status}, defaulting to "Pending"`);
   return "Pending";
+}
+
+// Helper function to validate frequency to match the expected union type
+function validateFrequency(frequency: string): "One-Time" | "Weekly" | "Monthly" | "Reoccurring" {
+  if (frequency === "One-Time" || frequency === "Weekly" || frequency === "Monthly" || frequency === "Reoccurring") {
+    return frequency as "One-Time" | "Weekly" | "Monthly" | "Reoccurring";
+  }
+  // Default to "One-Time" if an invalid frequency is provided
+  console.warn(`Invalid frequency: ${frequency}, defaulting to "One-Time"`);
+  return "One-Time";
 }
 
 // Calculate CAF Statistics from data
