@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { Building, CAFApplication, CAFStatistics } from "@/types/caf";
 import { Database } from "@/integrations/supabase/types";
@@ -22,7 +21,7 @@ export const fetchBuildings = async (): Promise<Building[]> => {
     region: item.region,
     originalBudget: Number(item.original_budget),
     budgetAfterPurchase: Number(item.budget_after_purchase),
-    status: item.status
+    status: undefined
   }));
 };
 
@@ -50,7 +49,7 @@ export const fetchBuildingById = async (id: string): Promise<Building | null> =>
     region: data.region,
     originalBudget: Number(data.original_budget),
     budgetAfterPurchase: Number(data.budget_after_purchase),
-    status: data.status
+    status: undefined
   };
 };
 
@@ -88,11 +87,11 @@ export const fetchCAFApplications = async (): Promise<CAFApplication[]> => {
     daysOfWeek: item.days_of_week,
     otherFrequency: item.other_frequency,
     typeOfFrequency: item.type_of_frequency,
-    receivedDate: item.received_date,
-    approverName: item.approver_name,
-    approvalDate: item.approval_date,
-    purchaserComment: item.purchaser_comment,
-    cafDescription: item.caf_description
+    receivedDate: undefined,
+    approverName: undefined,
+    approvalDate: undefined,
+    purchaserComment: undefined,
+    cafDescription: undefined
   }));
 };
 
@@ -131,11 +130,11 @@ export const fetchCAFApplicationsByBuilding = async (buildingAddress: string): P
     daysOfWeek: item.days_of_week,
     otherFrequency: item.other_frequency,
     typeOfFrequency: item.type_of_frequency,
-    receivedDate: item.received_date,
-    approverName: item.approver_name,
-    approvalDate: item.approval_date,
-    purchaserComment: item.purchaser_comment,
-    cafDescription: item.caf_description
+    receivedDate: undefined,
+    approverName: undefined,
+    approvalDate: undefined,
+    purchaserComment: undefined,
+    cafDescription: undefined
   }));
 };
 
