@@ -44,10 +44,12 @@ const BuildingList = ({
     const loadData = async () => {
       try {
         setIsLoading(true);
+        console.log('Fetching buildings and CAF applications from Supabase...');
         const [buildingsData, cafData] = await Promise.all([
           fetchBuildings(),
           fetchCAFApplications()
         ]);
+        console.log(`Fetched ${buildingsData.length} buildings and ${cafData.length} CAF applications`);
         setLocalBuildings(buildingsData);
         setLocalCafApplications(cafData);
       } catch (err) {
@@ -76,7 +78,7 @@ const BuildingList = ({
   }, {} as Record<string, CAFApplication[]>);
 
   if (isLoading) {
-    return <div className="text-center p-4">Loading buildings data...</div>;
+    return <div className="text-center p-4">Loading buildings data from Supabase...</div>;
   }
 
   if (error) {
@@ -86,7 +88,7 @@ const BuildingList = ({
   return (
     <div className="space-y-4">
       {localBuildings.length === 0 ? (
-        <div className="text-center p-4">No buildings found</div>
+        <div className="text-center p-4">No buildings found in Supabase</div>
       ) : (
         localBuildings.map((building) => {
           const buildingCAFs = cafsByBuilding[building.address] || [];

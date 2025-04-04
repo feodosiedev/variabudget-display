@@ -17,6 +17,7 @@ export type Database = {
           id: string
           original_budget: number
           region: string
+          sid: string
           updated_at: string
         }
         Insert: {
@@ -26,6 +27,7 @@ export type Database = {
           id?: string
           original_budget?: number
           region: string
+          sid: string
           updated_at?: string
         }
         Update: {
@@ -35,6 +37,7 @@ export type Database = {
           id?: string
           original_budget?: number
           region?: string
+          sid?: string
           updated_at?: string
         }
         Relationships: []
@@ -51,15 +54,12 @@ export type Database = {
           first_date: string | null
           frequency: string
           id: string
-          other_frequency: string | null
           pdf_link: string | null
-          purchase_amount: number
-          recurrence_count: number | null
+          purchase_amount: string
           region: string
-          requested_amount: number
+          requested_amount: string
           requires_updates: boolean
-          scheduled_day: string | null
-          tenants_attended: number | null
+          sid: string
           title: string
           type_of_frequency: string | null
           updated_at: string
@@ -75,15 +75,12 @@ export type Database = {
           first_date?: string | null
           frequency?: string
           id?: string
-          other_frequency?: string | null
           pdf_link?: string | null
-          purchase_amount?: number
-          recurrence_count?: number | null
+          purchase_amount: string
           region: string
-          requested_amount?: number
+          requested_amount: string
           requires_updates?: boolean
-          scheduled_day?: string | null
-          tenants_attended?: number | null
+          sid: string
           title: string
           type_of_frequency?: string | null
           updated_at?: string
@@ -99,15 +96,12 @@ export type Database = {
           first_date?: string | null
           frequency?: string
           id?: string
-          other_frequency?: string | null
           pdf_link?: string | null
-          purchase_amount?: number
-          recurrence_count?: number | null
+          purchase_amount?: string
           region?: string
-          requested_amount?: number
+          requested_amount?: string
           requires_updates?: boolean
-          scheduled_day?: string | null
-          tenants_attended?: number | null
+          sid?: string
           title?: string
           type_of_frequency?: string | null
           updated_at?: string

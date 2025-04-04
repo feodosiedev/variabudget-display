@@ -15,7 +15,9 @@ const CAFStatisticsComponent: React.FC = () => {
   useEffect(() => {
     const loadData = async () => {
       try {
+        console.log('Fetching CAF applications from Supabase...');
         const cafApplications = await fetchCAFApplications();
+        console.log(`Fetched ${cafApplications.length} CAF applications`);
         const stats = calculateCAFStatistics(cafApplications);
         setStatistics(stats);
       } catch (err) {
