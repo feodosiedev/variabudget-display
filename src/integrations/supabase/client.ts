@@ -14,27 +14,29 @@ console.log("Key starts with:", SUPABASE_PUBLISHABLE_KEY.substring(0, 10) + "...
 // Create a safer client initialization that works in both browser and server environments
 const createSafeClient = () => {
   try {
-    // Safer check for browser environment that doesn't rely on headers
-    if (typeof window !== 'undefined') {
-      return createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
-    } else {
-      // For SSR contexts
-      return createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
-        auth: {
-          persistSession: false,
-          autoRefreshToken: false,
-        }
-      });
-    }
-  } catch (error) {
-    console.error("Error during Supabase client creation:", error);
-    // Return a minimal client that won't throw errors
-    return createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
+    // More robust environment detection
+    const isBrowser = typeof window !== 'undefined' && typeof window.document !== 'undefined';
+    const isNode = typeof process !== 'undefined' && process.versions != null && process.versions.node != null;
+
+    console.log('Environment detection:', { isBrowser, isNode });
+
+    // Basic client configuration
+    const config = {
       auth: {
         persistSession: false,
         autoRefreshToken: false,
       }
-    });
+    };
+
+    // Create client with minimal configuration
+    const client = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, config);
+    
+    console.log('Supabase client created successfully');
+    return client;
+  } catch (error) {
+    console.error("Error during Supabase client creation:", error);
+    // Fallback to most basic client configuration
+    return createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
   }
 };
 
