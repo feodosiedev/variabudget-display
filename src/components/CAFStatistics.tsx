@@ -15,19 +15,31 @@ const CAFStatisticsComponent: React.FC = () => {
   useEffect(() => {
     const loadData = async () => {
       try {
-        console.log('Fetching CAF applications from Supabase...');
+        console.log('Fetching CAF applications for statistics...');
         const cafApplications = await fetchCAFApplications();
-        console.log(`Fetched ${cafApplications.length} CAF applications`);
+        console.log(`Fetched ${cafApplications.length} CAF applications for statistics`);
+        
+        if (cafApplications.length === 0) {
+          console.warn("No CAF applications found for statistics");
+          setError('No CAF applications found in the database');
+          toast({
+            title: 'Warning',
+            description: 'No CAF applications data found',
+            variant: 'default',
+          });
+          return;
+        }
+
         const stats = calculateCAFStatistics(cafApplications);
         setStatistics(stats);
       } catch (err) {
+        console.error('Error in CAFStatisticsComponent:', err);
         setError('Failed to fetch data from Supabase');
         toast({
           title: 'Error',
           description: 'Failed to load CAF statistics data',
           variant: 'destructive',
         });
-        console.error(err);
       } finally {
         setIsLoading(false);
       }
@@ -71,16 +83,20 @@ const CAFStatisticsComponent: React.FC = () => {
               <CardTitle>CAF Types</CardTitle>
             </CardHeader>
             <CardContent>
-              <ul className="space-y-1">
-                {Array.from(statistics.cafTypes.entries())
-                  .sort((a, b) => b[1] - a[1]) // Sort by count in descending order
-                  .map(([type, count]) => (
-                    <li key={type} className="flex justify-between">
-                      <span>{type}</span>
-                      <span className="font-semibold">{count}</span>
-                    </li>
-                  ))}
-              </ul>
+              {statistics.cafTypes.size > 0 ? (
+                <ul className="space-y-1">
+                  {Array.from(statistics.cafTypes.entries())
+                    .sort((a, b) => b[1] - a[1]) // Sort by count in descending order
+                    .map(([type, count]) => (
+                      <li key={type} className="flex justify-between">
+                        <span>{type}</span>
+                        <span className="font-semibold">{count}</span>
+                      </li>
+                    ))}
+                </ul>
+              ) : (
+                <p className="text-muted-foreground">No CAF types available</p>
+              )}
             </CardContent>
           </Card>
 
@@ -113,16 +129,20 @@ const CAFStatisticsComponent: React.FC = () => {
               <CardTitle>Regions</CardTitle>
             </CardHeader>
             <CardContent>
-              <ul className="space-y-1">
-                {Array.from(statistics.regions.entries())
-                  .sort((a, b) => b[1] - a[1]) // Sort by count in descending order
-                  .map(([region, count]) => (
-                    <li key={region} className="flex justify-between">
-                      <span>{region}</span>
-                      <span className="font-semibold">{count}</span>
-                    </li>
-                  ))}
-              </ul>
+              {statistics.regions.size > 0 ? (
+                <ul className="space-y-1">
+                  {Array.from(statistics.regions.entries())
+                    .sort((a, b) => b[1] - a[1]) // Sort by count in descending order
+                    .map(([region, count]) => (
+                      <li key={region} className="flex justify-between">
+                        <span>{region}</span>
+                        <span className="font-semibold">{count}</span>
+                      </li>
+                    ))}
+                </ul>
+              ) : (
+                <p className="text-muted-foreground">No region data available</p>
+              )}
             </CardContent>
           </Card>
 
@@ -132,16 +152,20 @@ const CAFStatisticsComponent: React.FC = () => {
               <CardTitle>Buildings</CardTitle>
             </CardHeader>
             <CardContent>
-              <ul className="space-y-1 max-h-[250px] overflow-y-auto">
-                {Array.from(statistics.buildings.entries())
-                  .sort((a, b) => b[1] - a[1]) // Sort by count in descending order
-                  .map(([building, count]) => (
-                    <li key={building} className="flex justify-between">
-                      <span>{building}</span>
-                      <span className="font-semibold">{count}</span>
-                    </li>
-                  ))}
-              </ul>
+              {statistics.buildings.size > 0 ? (
+                <ul className="space-y-1 max-h-[250px] overflow-y-auto">
+                  {Array.from(statistics.buildings.entries())
+                    .sort((a, b) => b[1] - a[1]) // Sort by count in descending order
+                    .map(([building, count]) => (
+                      <li key={building} className="flex justify-between">
+                        <span>{building}</span>
+                        <span className="font-semibold">{count}</span>
+                      </li>
+                    ))}
+                </ul>
+              ) : (
+                <p className="text-muted-foreground">No building data available</p>
+              )}
             </CardContent>
           </Card>
         </Grid>

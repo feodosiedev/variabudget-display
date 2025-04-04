@@ -1,132 +1,180 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { Building, CAFApplication, CAFStatistics } from "@/types/caf";
 
 // Fetch all buildings
 export const fetchBuildings = async (): Promise<Building[]> => {
-  const { data, error } = await supabase
-    .from('buildings')
-    .select('*');
+  try {
+    console.log('Fetching buildings from Supabase...');
+    const { data, error } = await supabase
+      .from('buildings')
+      .select('*');
 
-  if (error) {
-    console.error('Error fetching buildings:', error);
-    throw error;
+    if (error) {
+      console.error('Error fetching buildings:', error);
+      throw error;
+    }
+
+    if (!data) {
+      console.warn('No building data returned from Supabase');
+      return [];
+    }
+
+    console.log(`Successfully fetched ${data.length} buildings`);
+    
+    return data.map(item => ({
+      id: item.id,
+      address: item.address,
+      region: item.region,
+      originalBudget: Number(item.original_budget),
+      budgetAfterPurchase: Number(item.budget_after_purchase),
+      status: undefined
+    }));
+  } catch (err) {
+    console.error('Exception in fetchBuildings:', err);
+    throw err;
   }
-
-  if (!data) return [];
-
-  return data.map(item => ({
-    id: item.id,
-    address: item.address,
-    region: item.region,
-    originalBudget: Number(item.original_budget),
-    budgetAfterPurchase: Number(item.budget_after_purchase),
-    status: undefined
-  }));
 };
 
 // Fetch a single building by ID
 export const fetchBuildingById = async (id: string): Promise<Building | null> => {
-  const { data, error } = await supabase
-    .from('buildings')
-    .select('*')
-    .eq('id', id)
-    .single();
+  try {
+    console.log(`Fetching building with ID: ${id}`);
+    const { data, error } = await supabase
+      .from('buildings')
+      .select('*')
+      .eq('id', id)
+      .single();
 
-  if (error) {
-    if (error.code === 'PGRST116') {
-      return null; // Building not found
+    if (error) {
+      if (error.code === 'PGRST116') {
+        console.warn(`Building with ID ${id} not found`);
+        return null; // Building not found
+      }
+      console.error('Error fetching building:', error);
+      throw error;
     }
-    console.error('Error fetching building:', error);
-    throw error;
+
+    if (!data) {
+      console.warn(`No data returned for building ID ${id}`);
+      return null;
+    }
+
+    console.log('Successfully fetched building details');
+    
+    return {
+      id: data.id,
+      address: data.address,
+      region: data.region,
+      originalBudget: Number(data.original_budget),
+      budgetAfterPurchase: Number(data.budget_after_purchase),
+      status: undefined
+    };
+  } catch (err) {
+    console.error(`Exception in fetchBuildingById for ID ${id}:`, err);
+    throw err;
   }
-
-  if (!data) return null;
-
-  return {
-    id: data.id,
-    address: data.address,
-    region: data.region,
-    originalBudget: Number(data.original_budget),
-    budgetAfterPurchase: Number(data.budget_after_purchase),
-    status: undefined
-  };
 };
 
 // Fetch all CAF applications
 export const fetchCAFApplications = async (): Promise<CAFApplication[]> => {
-  const { data, error } = await supabase
-    .from('caf_applications')
-    .select('*');
+  try {
+    console.log('Fetching CAF applications from Supabase...');
+    const { data, error } = await supabase
+      .from('caf_applications')
+      .select('*');
 
-  if (error) {
-    console.error('Error fetching CAF applications:', error);
-    throw error;
+    if (error) {
+      console.error('Error fetching CAF applications:', error);
+      throw error;
+    }
+
+    if (!data) {
+      console.warn('No CAF applications data returned from Supabase');
+      return [];
+    }
+
+    console.log(`Successfully fetched ${data.length} CAF applications`);
+    
+    return data.map(item => ({
+      id: item.id,
+      title: item.title,
+      building: item.building,
+      region: item.region,
+      requestedAmount: Number(item.requested_amount),
+      purchaseAmount: Number(item.purchase_amount),
+      approvalStatus: validateApprovalStatus(item.approval_status),
+      eventType: item.event_type,
+      pdfLink: item.pdf_link,
+      requiresUpdates: item.requires_updates,
+      frequency: validateFrequency(item.frequency),
+      category: item.category,
+      firstDate: item.first_date,
+      applicantName: item.applicant_name,
+      daysOfWeek: item.days_of_week,
+      typeOfFrequency: item.type_of_frequency,
+      receivedDate: undefined,
+      approverName: undefined,
+      approvalDate: undefined,
+      purchaserComment: undefined,
+      cafDescription: undefined,
+      tenantsAttended: 0 // Default value for tenantsAttended
+    }));
+  } catch (err) {
+    console.error('Exception in fetchCAFApplications:', err);
+    throw err;
   }
-
-  if (!data) return [];
-
-  return data.map(item => ({
-    id: item.id,
-    title: item.title,
-    building: item.building,
-    region: item.region,
-    requestedAmount: Number(item.requested_amount),
-    purchaseAmount: Number(item.purchase_amount),
-    approvalStatus: validateApprovalStatus(item.approval_status),
-    eventType: item.event_type,
-    pdfLink: item.pdf_link,
-    requiresUpdates: item.requires_updates,
-    frequency: validateFrequency(item.frequency),
-    category: item.category,
-    firstDate: item.first_date,
-    applicantName: item.applicant_name,
-    daysOfWeek: item.days_of_week,
-    typeOfFrequency: item.type_of_frequency,
-    receivedDate: undefined,
-    approverName: undefined,
-    approvalDate: undefined,
-    purchaserComment: undefined,
-    cafDescription: undefined
-  }));
 };
 
 // Fetch CAF applications for a specific building
 export const fetchCAFApplicationsByBuilding = async (buildingAddress: string): Promise<CAFApplication[]> => {
-  const { data, error } = await supabase
-    .from('caf_applications')
-    .select('*')
-    .eq('building', buildingAddress);
+  try {
+    console.log(`Fetching CAF applications for building: ${buildingAddress}`);
+    const { data, error } = await supabase
+      .from('caf_applications')
+      .select('*')
+      .eq('building', buildingAddress);
 
-  if (error) {
-    console.error('Error fetching CAF applications for building:', error);
-    throw error;
+    if (error) {
+      console.error('Error fetching CAF applications for building:', error);
+      throw error;
+    }
+
+    if (!data) {
+      console.warn(`No CAF applications data returned for building: ${buildingAddress}`);
+      return [];
+    }
+
+    console.log(`Successfully fetched ${data.length} CAF applications for building: ${buildingAddress}`);
+    
+    return data.map(item => ({
+      id: item.id,
+      title: item.title,
+      building: item.building,
+      region: item.region,
+      requestedAmount: Number(item.requested_amount),
+      purchaseAmount: Number(item.purchase_amount),
+      approvalStatus: validateApprovalStatus(item.approval_status),
+      eventType: item.event_type,
+      pdfLink: item.pdf_link,
+      requiresUpdates: item.requires_updates,
+      frequency: validateFrequency(item.frequency),
+      category: item.category,
+      firstDate: item.first_date,
+      applicantName: item.applicant_name,
+      daysOfWeek: item.days_of_week,
+      typeOfFrequency: item.type_of_frequency,
+      receivedDate: undefined,
+      approverName: undefined,
+      approvalDate: undefined,
+      purchaserComment: undefined,
+      cafDescription: undefined,
+      tenantsAttended: 0 // Default value for tenantsAttended
+    }));
+  } catch (err) {
+    console.error(`Exception in fetchCAFApplicationsByBuilding for building ${buildingAddress}:`, err);
+    throw err;
   }
-
-  if (!data) return [];
-
-  return data.map(item => ({
-    id: item.id,
-    title: item.title,
-    building: item.building,
-    region: item.region,
-    requestedAmount: Number(item.requested_amount),
-    purchaseAmount: Number(item.purchase_amount),
-    approvalStatus: validateApprovalStatus(item.approval_status),
-    eventType: item.event_type,
-    pdfLink: item.pdf_link,
-    requiresUpdates: item.requires_updates,
-    frequency: validateFrequency(item.frequency),
-    category: item.category,
-    firstDate: item.first_date,
-    applicantName: item.applicant_name,
-    daysOfWeek: item.days_of_week,
-    typeOfFrequency: item.type_of_frequency,
-    receivedDate: undefined,
-    approverName: undefined,
-    approvalDate: undefined,
-    purchaserComment: undefined,
-    cafDescription: undefined
-  }));
 };
 
 // Helper function to validate approval status to match the expected union type
@@ -141,7 +189,9 @@ function validateApprovalStatus(status: string): "Approved" | "Pending" | "Rejec
 
 // Helper function to validate frequency to match the expected union type
 function validateFrequency(frequency: string): "One-Time" | "Reoccurring" {
-  const trimmedFrequency = frequency.trim();
+  // Trim any extra whitespace
+  const trimmedFrequency = frequency ? frequency.trim() : "One-Time";
+  
   if (trimmedFrequency === "One-Time" || trimmedFrequency === "Reoccurring") {
     return trimmedFrequency as "One-Time" | "Reoccurring";
   }
