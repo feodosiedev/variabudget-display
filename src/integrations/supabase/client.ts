@@ -12,24 +12,37 @@ const SUPABASE_PUBLISHABLE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiO
 console.log("Initializing Supabase client with URL:", SUPABASE_URL);
 console.log("Key starts with:", SUPABASE_PUBLISHABLE_KEY.substring(0, 10) + "...");
 
-let supabaseClient;
+// Create the client in a safe way that works in both browser and server environments
+const createSafeClient = () => {
+  try {
+    // Check if we're in a browser environment with XMLHttpRequest
+    if (typeof window !== 'undefined' && 'XMLHttpRequest' in window) {
+      return createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+    } else {
+      // In a non-browser environment or SSR context, create with fetch options
+      return createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
+        auth: {
+          persistSession: false,
+        },
+      });
+    }
+  } catch (error) {
+    console.error("Error during Supabase client creation:", error);
+    // Return a minimal client that won't throw errors
+    return createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
+      auth: {
+        persistSession: false,
+        autoRefreshToken: false,
+      },
+    });
+  }
+};
 
-try {
-  const client = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
-  console.log("Supabase client initialized successfully");
-  
-  // Verify the client is working by making a simple request
-  client.auth.getSession().then(() => {
-    console.log("Supabase auth connection verified");
-  }).catch(error => {
-    console.error("Error verifying Supabase auth connection:", error);
-  });
-  
-  supabaseClient = client;
-} catch (error) {
-  console.error("Error initializing Supabase client:", error);
-  // Create a fallback client to prevent app crashes
-  supabaseClient = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
-}
+// Initialize the client
+const supabaseClient = createSafeClient();
 
+// Log successful initialization but don't test connection to avoid errors during SSR
+console.log("Supabase client initialized");
+
+// Export the client
 export const supabase = supabaseClient;

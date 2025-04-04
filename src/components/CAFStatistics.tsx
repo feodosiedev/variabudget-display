@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Grid } from '@/components/ui/grid';
@@ -16,22 +15,26 @@ const CAFStatisticsComponent: React.FC = () => {
     const loadData = async () => {
       try {
         console.log('Fetching CAF applications for statistics...');
-        const cafApplications = await fetchCAFApplications();
-        console.log(`Fetched ${cafApplications.length} CAF applications for statistics`);
         
-        if (cafApplications.length === 0) {
-          console.warn("No CAF applications found for statistics");
-          setError('No CAF applications found in the database');
-          toast({
-            title: 'Warning',
-            description: 'No CAF applications data found',
-            variant: 'default',
-          });
-          return;
-        }
+        // Wrap in setTimeout to ensure client-side execution only
+        if (typeof window !== 'undefined') {
+          const cafApplications = await fetchCAFApplications();
+          console.log(`Fetched ${cafApplications.length} CAF applications for statistics`);
+          
+          if (cafApplications.length === 0) {
+            console.warn("No CAF applications found for statistics");
+            setError('No CAF applications found in the database');
+            toast({
+              title: 'Warning',
+              description: 'No CAF applications data found',
+              variant: 'default',
+            });
+            return;
+          }
 
-        const stats = calculateCAFStatistics(cafApplications);
-        setStatistics(stats);
+          const stats = calculateCAFStatistics(cafApplications);
+          setStatistics(stats);
+        }
       } catch (err) {
         console.error('Error in CAFStatisticsComponent:', err);
         setError('Failed to fetch data from Supabase');
@@ -47,6 +50,11 @@ const CAFStatisticsComponent: React.FC = () => {
 
     loadData();
   }, [toast]);
+
+  // Safeguard for server-side rendering
+  if (typeof window === 'undefined') {
+    return <div>Loading statistics...</div>;
+  }
 
   return (
     <div className="space-y-4">
