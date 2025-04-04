@@ -1,6 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
 import { Building, CAFApplication, CAFStatistics } from "@/types/caf";
-import { Database } from "@/integrations/supabase/types";
 
 // Fetch all buildings
 export const fetchBuildings = async (): Promise<Building[]> => {
@@ -75,17 +74,13 @@ export const fetchCAFApplications = async (): Promise<CAFApplication[]> => {
     purchaseAmount: Number(item.purchase_amount),
     approvalStatus: validateApprovalStatus(item.approval_status),
     eventType: item.event_type,
-    tenantsAttended: item.tenants_attended,
     pdfLink: item.pdf_link,
     requiresUpdates: item.requires_updates,
     frequency: validateFrequency(item.frequency),
     category: item.category,
-    scheduledDay: item.scheduled_day,
-    recurrenceCount: item.recurrence_count,
     firstDate: item.first_date,
     applicantName: item.applicant_name,
     daysOfWeek: item.days_of_week,
-    otherFrequency: item.other_frequency,
     typeOfFrequency: item.type_of_frequency,
     receivedDate: undefined,
     approverName: undefined,
@@ -118,17 +113,13 @@ export const fetchCAFApplicationsByBuilding = async (buildingAddress: string): P
     purchaseAmount: Number(item.purchase_amount),
     approvalStatus: validateApprovalStatus(item.approval_status),
     eventType: item.event_type,
-    tenantsAttended: item.tenants_attended,
     pdfLink: item.pdf_link,
     requiresUpdates: item.requires_updates,
     frequency: validateFrequency(item.frequency),
     category: item.category,
-    scheduledDay: item.scheduled_day,
-    recurrenceCount: item.recurrence_count,
     firstDate: item.first_date,
     applicantName: item.applicant_name,
     daysOfWeek: item.days_of_week,
-    otherFrequency: item.other_frequency,
     typeOfFrequency: item.type_of_frequency,
     receivedDate: undefined,
     approverName: undefined,
@@ -149,12 +140,13 @@ function validateApprovalStatus(status: string): "Approved" | "Pending" | "Rejec
 }
 
 // Helper function to validate frequency to match the expected union type
-function validateFrequency(frequency: string): "One-Time" | "Weekly" | "Monthly" | "Reoccurring" {
-  if (frequency === "One-Time" || frequency === "Weekly" || frequency === "Monthly" || frequency === "Reoccurring") {
-    return frequency as "One-Time" | "Weekly" | "Monthly" | "Reoccurring";
+function validateFrequency(frequency: string): "One-Time" | "Reoccurring" {
+  const trimmedFrequency = frequency.trim();
+  if (trimmedFrequency === "One-Time" || trimmedFrequency === "Reoccurring") {
+    return trimmedFrequency as "One-Time" | "Reoccurring";
   }
   // Default to "One-Time" if an invalid frequency is provided
-  console.warn(`Invalid frequency: ${frequency}, defaulting to "One-Time"`);
+  console.warn(`Invalid frequency: "${frequency}", defaulting to "One-Time"`);
   return "One-Time";
 }
 

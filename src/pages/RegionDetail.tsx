@@ -1,10 +1,10 @@
 import { useParams, Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { getRegionById, getCAFApplicationsForBuilding } from "@/services/sharePointService";
+import { fetchBuildings, fetchCAFApplications } from "@/services/supabaseService";
 import { formatCurrency } from "@/utils/formatters";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import Header from "@/components/Header";
-import { ArrowLeft, Building, CalendarCheck, FileText, MapPin, Percent, Users } from "lucide-react";
+import { ArrowLeft, Building, CalendarCheck, ClipboardCheck, FileText, MapPin, Percent, Users } from "lucide-react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
@@ -13,27 +13,32 @@ import BuildingList from "@/components/BuildingList";
 const RegionDetail = () => {
   const { id } = useParams<{ id: string }>();
 
-  const { data: region, isLoading, isError } = useQuery({
-    queryKey: ['region', id],
-    queryFn: () => {
-      if (!id) throw new Error("Region ID is required");
-      return getRegionById(id);
-    },
+  const { data: buildings, isLoading: buildingsLoading } = useQuery({
+    queryKey: ['buildings'],
+    queryFn: fetchBuildings,
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
+
+  const { data: cafApplications, isLoading: cafsLoading } = useQuery({
+    queryKey: ['cafApplications'],
+    queryFn: fetchCAFApplications,
+    staleTime: 5 * 60 * 1000, // 5 minutes
+  });
+
+  const isLoading = buildingsLoading || cafsLoading;
 
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="animate-pulse text-center">
           <MapPin className="h-12 w-12 mx-auto mb-4 text-muted" />
-          <div className="text-lg">Loading region data from SharePoint...</div>
+          <div className="text-lg">Loading region data from Supabase...</div>
         </div>
       </div>
     );
   }
 
-  if (isError || !region) {
+  if (!buildings || !cafApplications || !id) {
     return (
       <div className="min-h-screen flex flex-col">
         <Header />
@@ -48,10 +53,19 @@ const RegionDetail = () => {
     );
   }
 
-  // Calculate event types count
-  const oneTimeEvents = region.cafApplications.filter(caf => caf.frequency === "One-Time").length;
-  const recurringEvents = region.cafApplications.filter(caf => caf.frequency === "Reoccurring").length;
-  const tenantLedEvents = region.cafApplications.filter(caf => caf.eventType === "Social").length;
+  // Filter data for the current region
+  const regionBuildings = buildings.filter(b => b.region.toLowerCase().replace(" ", "-") === id);
+  const regionApplications = cafApplications.filter(a => a.region.toLowerCase().replace(" ", "-") === id);
+  const regionName = id.split("-").map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(" ");
+
+  // Calculate region statistics
+  const totalOriginalBudget = regionBuildings.reduce((sum, b) => sum + b.originalBudget, 0);
+  const totalBudgetAfterPurchase = regionBuildings.reduce((sum, b) => sum + b.budgetAfterPurchase, 0);
+  const totalRemainingBudget = totalOriginalBudget - totalBudgetAfterPurchase;
+  const approvedApplications = regionApplications.filter(a => a.approvalStatus === "Approved").length;
+  const approvalRate = regionApplications.length > 0 
+    ? (approvedApplications / regionApplications.length) * 100 
+    : 0;
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -62,86 +76,93 @@ const RegionDetail = () => {
           Back to Dashboard
         </Link>
 
-        <div className="mb-6">
-          <h1 className="text-3xl font-bold flex items-center">
-            <MapPin className="h-6 w-6 mr-2 text-primary" />
-            {region.name} Region
-          </h1>
-          <p className="text-muted-foreground">CAF applications and budget summary</p>
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold">{regionName}</h1>
+          <p className="text-muted-foreground">Region overview and building details</p>
         </div>
 
-        <div className="grid gap-4 md:grid-cols-3 mb-8">
+        {/* Summary Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Budget</CardTitle>
-              <Percent className="h-4 w-4 text-muted-foreground" />
+              <CardTitle className="text-sm font-medium">Buildings</CardTitle>
+              <Building className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{formatCurrency(region.totalOriginalBudget)}</div>
-              <div className="flex justify-between items-center mt-1">
-                <p className="text-xs text-muted-foreground">Original Budget</p>
-                <Badge variant="outline">
-                  {formatCurrency(region.totalBudgetAfterPurchase)} remaining
-                </Badge>
-              </div>
-              <Progress
-                value={(region.totalRemainingBudget / region.totalOriginalBudget) * 100}
-                className="h-2 mt-2"
-              />
+              <div className="text-2xl font-bold">{regionBuildings.length}</div>
             </CardContent>
           </Card>
-
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">CAF Applications</CardTitle>
+              <CardTitle className="text-sm font-medium">Applications</CardTitle>
               <FileText className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{region.totalApplications}</div>
-              <div className="flex justify-between items-center mt-1">
-                <p className="text-xs text-muted-foreground">Total applications</p>
-                <Badge variant="outline" className="bg-primary/10">
-                  {region.approvedApplications} approved ({region.approvalRate.toFixed(0)}%)
-                </Badge>
+              <div className="text-2xl font-bold">{regionApplications.length}</div>
+              <div className="flex items-center mt-1">
+                <ClipboardCheck className="mr-1 h-4 w-4 text-primary" />
+                <span className="text-sm">
+                  {approvedApplications} approved
+                  <Badge variant="outline" className="ml-2">
+                    {approvalRate.toFixed(0)}%
+                  </Badge>
+                </span>
+              </div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Total Budget</CardTitle>
+              <Percent className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{formatCurrency(totalOriginalBudget)}</div>
+              <div className="flex items-center mt-1">
+                <span className="text-sm text-muted-foreground">
+                  {formatCurrency(totalOriginalBudget - totalRemainingBudget)} remaining
+                </span>
               </div>
               <Progress
-                value={region.approvalRate}
+                value={(totalRemainingBudget / totalOriginalBudget) * 100}
                 className="h-2 mt-2"
               />
             </CardContent>
           </Card>
-
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Event Types</CardTitle>
               <CalendarCheck className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-3 gap-2 mt-1">
-                <div className="flex flex-col items-center p-2 bg-muted/30 rounded">
-                  <span className="text-lg font-semibold">{oneTimeEvents}</span>
-                  <span className="text-xs text-muted-foreground">One-time</span>
+              <div className="space-y-2">
+                <div className="flex justify-between items-center">
+                  <div className="flex items-center">
+                    <div className="w-3 h-3 rounded-full bg-primary mr-2"></div>
+                    <span className="text-sm">One-time</span>
+                  </div>
+                  <span className="text-sm font-medium">
+                    {regionApplications.filter(a => a.frequency === "One-Time").length}
+                  </span>
                 </div>
-                <div className="flex flex-col items-center p-2 bg-muted/30 rounded">
-                  <span className="text-lg font-semibold">{recurringEvents}</span>
-                  <span className="text-xs text-muted-foreground">Recurring</span>
-                </div>
-                <div className="flex flex-col items-center p-2 bg-muted/30 rounded">
-                  <span className="text-lg font-semibold">{tenantLedEvents}</span>
-                  <span className="text-xs text-muted-foreground">Tenant-led</span>
+                <div className="flex justify-between items-center">
+                  <div className="flex items-center">
+                    <div className="w-3 h-3 rounded-full bg-blue-500 mr-2"></div>
+                    <span className="text-sm">Recurring</span>
+                  </div>
+                  <span className="text-sm font-medium">
+                    {regionApplications.filter(a => a.frequency === "Reoccurring").length}
+                  </span>
                 </div>
               </div>
             </CardContent>
           </Card>
         </div>
 
-        <div className="mb-8">
-          <h2 className="text-xl font-semibold mb-4 flex items-center">
-            <Building className="h-5 w-5 mr-2" />
-            Buildings ({region.buildings.length})
-          </h2>
-          <BuildingList buildings={region.buildings} cafApplications={region.cafApplications} />
-        </div>
+        {/* Buildings List */}
+        <BuildingList 
+          buildings={regionBuildings}
+          cafApplications={regionApplications}
+        />
       </main>
     </div>
   );

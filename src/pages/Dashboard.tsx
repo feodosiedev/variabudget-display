@@ -1,72 +1,99 @@
 import { useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { getCAFSummary } from "@/services/sharePointService";
+import { fetchBuildings, fetchCAFApplications } from "@/services/supabaseService";
 import Header from "@/components/Header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { Link } from "react-router-dom";
-import { Badge } from "@/components/ui/badge";
 import { formatCurrency } from "@/utils/formatters";
 import {
-  Building,
   CalendarCheck,
-  CalendarClock,
-  ChevronRight,
-  ClipboardCheck,
   FileText,
-  MapPin,
   Percent,
 } from "lucide-react";
 import RegionList from "@/components/RegionList";
 
 const Dashboard = () => {
   console.log("Dashboard component initialized");
-  
-  const { data: cafSummary, isLoading, isError, error } = useQuery({
-    queryKey: ['cafSummary'],
-    queryFn: getCAFSummary,
+
+  const { data: buildings, isLoading: buildingsLoading } = useQuery({
+    queryKey: ['buildings'],
+    queryFn: fetchBuildings,
     staleTime: 5 * 60 * 1000, // 5 minutes
     retry: 2,
     refetchOnWindowFocus: false,
   });
 
-  // Debug info for the CAF summary and regions
+  const { data: cafApplications, isLoading: cafsLoading } = useQuery({
+    queryKey: ['cafApplications'],
+    queryFn: fetchCAFApplications,
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    retry: 2,
+    refetchOnWindowFocus: false,
+  });
+
+  const isLoading = buildingsLoading || cafsLoading;
+
+  // Debug info for the data
   useEffect(() => {
-    if (cafSummary) {
-      console.log("CAF Summary loaded:", cafSummary);
-      console.log("Regions found:", cafSummary.regions.length);
-      console.log("Region details:", cafSummary.regions.map(r => ({
-        name: r.name,
-        buildingCount: r.buildings.length,
-        applicationCount: r.cafApplications.length,
-      })));
+    if (buildings && cafApplications) {
+      console.log("Data loaded:", {
+        buildingsCount: buildings.length,
+        applicationsCount: cafApplications.length,
+        eventFrequencies: cafApplications.reduce((acc, app) => {
+          acc[app.frequency] = (acc[app.frequency] || 0) + 1;
+          return acc;
+        }, {} as Record<string, number>)
+      });
     }
-    if (isError) {
-      console.error("Error loading CAF Summary:", error);
-    }
-  }, [cafSummary, isError, error]);
+  }, [buildings, cafApplications]);
 
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="animate-pulse text-center">
           <FileText className="h-12 w-12 mx-auto mb-4 text-muted" />
-          <div className="text-lg">Loading data from SharePoint...</div>
+          <div className="text-lg">Loading data from Supabase...</div>
         </div>
       </div>
     );
   }
 
-  if (isError || !cafSummary) {
+  if (!buildings || !cafApplications) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-destructive text-center">
           <div className="text-lg font-semibold mb-2">Error loading data</div>
-          <div className="text-sm">Please check that the SharePoint connection is configured correctly.</div>
+          <div className="text-sm">Please check that the Supabase connection is configured correctly.</div>
         </div>
       </div>
     );
   }
+
+  // Calculate region summaries
+  const regions = ["north-west", "south-west", "north-east", "south-east"].map(regionId => {
+    const regionBuildings = buildings.filter(b => b.region.toLowerCase().replace(" ", "-") === regionId);
+    const regionApplications = cafApplications.filter(a => a.region.toLowerCase().replace(" ", "-") === regionId);
+
+    return {
+      id: regionId,
+      name: regionId.split("-").map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(" "),
+      buildings: regionBuildings,
+      cafApplications: regionApplications,
+      totalOriginalBudget: regionBuildings.reduce((sum, b) => sum + b.originalBudget, 0),
+      totalBudgetAfterPurchase: regionBuildings.reduce((sum, b) => sum + b.budgetAfterPurchase, 0),
+      totalApplications: regionApplications.length,
+      approvedApplications: regionApplications.filter(a => a.approvalStatus === "Approved").length,
+      approvalRate: regionApplications.length > 0
+        ? (regionApplications.filter(a => a.approvalStatus === "Approved").length / regionApplications.length) * 100
+        : 0,
+      totalRemainingBudget: regionBuildings.reduce((sum, b) => sum + b.originalBudget, 0) - regionBuildings.reduce((sum, b) => sum + b.budgetAfterPurchase, 0)
+    };
+  });
+
+  // Calculate total budgets
+  const totalOriginalBudget = buildings.reduce((sum, b) => sum + b.originalBudget, 0);
+  const totalBudgetAfterPurchase = buildings.reduce((sum, b) => sum + b.budgetAfterPurchase, 0);
+  const totalRemainingBudget = totalOriginalBudget - totalBudgetAfterPurchase;
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -78,50 +105,50 @@ const Dashboard = () => {
         </div>
 
         {/* Summary Cards */}
-        <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-4 mb-8">
-          {/* Applications Card */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
           <Card>
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium">CAF Applications</CardTitle>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Total Applications</CardTitle>
               <FileText className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{cafSummary.totalApplications}</div>
-              <div className="flex items-center mt-1">
-                <ClipboardCheck className="mr-1 h-4 w-4 text-primary" />
-                <span className="text-sm">
-                  {cafSummary.approvedApplications} approved
-                  <Badge variant="outline" className="ml-2">
-                    {cafSummary.approvalRate.toFixed(0)}%
-                  </Badge>
-                </span>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Budget Card */}
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium">Total Budget</CardTitle>
-              <Percent className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{formatCurrency(cafSummary.totalOriginalBudget)}</div>
+              <div className="text-2xl font-bold">{cafApplications.length}</div>
               <div className="flex items-center mt-1">
                 <span className="text-sm text-muted-foreground">
-                  {formatCurrency(cafSummary.totalBudgetAfterPurchase)} remaining
+                  {cafApplications.filter(a => a.approvalStatus === "Approved").length} approved
                 </span>
               </div>
               <Progress
-                value={(cafSummary.totalRemainingBudget / cafSummary.totalOriginalBudget) * 100}
+                value={(cafApplications.filter(a => a.approvalStatus === "Approved").length / cafApplications.length) * 100}
                 className="h-2 mt-2"
               />
             </CardContent>
           </Card>
-
-          {/* Event Types */}
           <Card>
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Total Budget</CardTitle>
+              <div className="flex items-center gap-2">
+                <span className="text-sm font-medium text-muted-foreground">
+                  {((totalRemainingBudget / totalOriginalBudget) * 100).toFixed(1)}%
+                </span>
+                <Percent className="h-4 w-4 text-muted-foreground" />
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{formatCurrency(totalOriginalBudget)}</div>
+              <div className="flex items-center mt-1">
+                <span className="text-sm text-muted-foreground">
+                  {formatCurrency(totalRemainingBudget)} remaining
+                </span>
+              </div>
+              <Progress
+                value={(totalRemainingBudget / totalOriginalBudget) * 100}
+                className="h-2 mt-2"
+              />
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Event Types</CardTitle>
               <CalendarCheck className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
@@ -132,78 +159,30 @@ const Dashboard = () => {
                     <div className="w-3 h-3 rounded-full bg-primary mr-2"></div>
                     <span className="text-sm">One-time</span>
                   </div>
-                  <span className="text-sm font-medium">{cafSummary.oneTimeEvents}</span>
+                  <span className="text-sm font-medium">
+                    {cafApplications.filter(a =>
+                      a.frequency === "One-Time"
+                    ).length}
+                  </span>
                 </div>
-
                 <div className="flex justify-between items-center">
                   <div className="flex items-center">
                     <div className="w-3 h-3 rounded-full bg-blue-500 mr-2"></div>
                     <span className="text-sm">Recurring</span>
                   </div>
-                  <span className="text-sm font-medium">{cafSummary.recurringEvents}</span>
+                  <span className="text-sm font-medium">
+                    {cafApplications.filter(a =>
+                      a.frequency === "Reoccurring"
+                    ).length}
+                  </span>
                 </div>
-
-                <div className="flex justify-between items-center">
-                  <div className="flex items-center">
-                    <div className="w-3 h-3 rounded-full bg-green-500 mr-2"></div>
-                    <span className="text-sm">Tenant-led</span>
-                  </div>
-                  <span className="text-sm font-medium">{cafSummary.tenantLedEvents}</span>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Regions Overview */}
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium">Regions</CardTitle>
-              <MapPin className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{cafSummary.regions.length}</div>
-              <div className="text-sm text-muted-foreground mt-1">
-                {cafSummary.regions.reduce((total, region) => total + region.buildings.length, 0)} buildings total
-              </div>
-              <div className="mt-3">
-                {cafSummary.regions.slice(0, 3).map(region => (
-                  <Link
-                    key={region.id}
-                    to={`/region/${region.id}`}
-                    className="flex items-center justify-between text-sm py-1 hover:text-primary"
-                  >
-                    <span>{region.name}</span>
-                    <ChevronRight className="h-4 w-4" />
-                  </Link>
-                ))}
-                {cafSummary.regions.length > 3 && (
-                  <div className="text-xs text-center mt-1 text-muted-foreground">
-                    +{cafSummary.regions.length - 3} more regions
-                  </div>
-                )}
               </div>
             </CardContent>
           </Card>
         </div>
 
         {/* Regions List */}
-        <div className="mt-8">
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-xl font-semibold">Regions ({cafSummary.regions.length})</h2>
-          </div>
-
-          {cafSummary.regions.length === 0 ? (
-            <div className="p-6 text-center border rounded-lg bg-muted/10">
-              <MapPin className="h-10 w-10 mx-auto mb-2 text-muted" />
-              <h3 className="text-lg font-medium mb-1">No Regions Found</h3>
-              <p className="text-sm text-muted-foreground max-w-md mx-auto">
-                No regions found in the Excel file. Please ensure your Excel file has a 'Region' column with region names.
-              </p>
-            </div>
-          ) : (
-            <RegionList regions={cafSummary.regions} />
-          )}
-        </div>
+        <RegionList regions={regions} />
       </main>
     </div>
   );
