@@ -12,18 +12,22 @@ const SUPABASE_PUBLISHABLE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiO
 console.log("Initializing Supabase client with URL:", SUPABASE_URL);
 console.log("Key starts with:", SUPABASE_PUBLISHABLE_KEY.substring(0, 10) + "...");
 
-// Create the client in a safe way that works in both browser and server environments
+// Create a safer client initialization that works in both browser and server environments
 const createSafeClient = () => {
   try {
-    // Check if we're in a browser environment with XMLHttpRequest
-    if (typeof window !== 'undefined' && 'XMLHttpRequest' in window) {
+    // Safer check for browser environment that doesn't rely on headers
+    if (typeof window !== 'undefined') {
       return createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
     } else {
-      // In a non-browser environment or SSR context, create with fetch options
+      // For SSR contexts
       return createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
         auth: {
           persistSession: false,
+          autoRefreshToken: false,
         },
+        global: {
+          headers: {}, // Explicit empty headers to prevent undefined access
+        }
       });
     }
   } catch (error) {
@@ -34,6 +38,9 @@ const createSafeClient = () => {
         persistSession: false,
         autoRefreshToken: false,
       },
+      global: {
+        headers: {}, // Explicit empty headers
+      }
     });
   }
 };
@@ -41,7 +48,7 @@ const createSafeClient = () => {
 // Initialize the client
 const supabaseClient = createSafeClient();
 
-// Log successful initialization but don't test connection to avoid errors during SSR
+// Log successful initialization but don't test connection
 console.log("Supabase client initialized");
 
 // Export the client
